@@ -12,20 +12,22 @@ which can be written more conveniently as
 ptr_to_unique can be initialised by a notifying_unique_ptr (the owner), another ptr_to_unique or nullptr.  
 
 Like the unique_ptr it references, it is guaranteed to be valid or read as null.
+	
+________________________________________________________________________________
 
-____________________SPECIFICATION________________________________________________
+SPECIFICATION  -  #include "ptr_to_unique.h"  -  namespace xnr::
 
-Requires unique_ptr it is to reference to be declared with the notify_ptrs deleter
+Requires unique_ptr it is to reference to be declared with the notify_ptrs deleter provided
 
-    std::unique_ptr<T, notify_ptrs<T>> //a unique_ptr enabled for use with ptr_to_unique
+    std::unique_ptr<T, xnr::notify_ptrs<T>> //a unique_ptr enabled for use with ptr_to_unique
 
 or more concisely 
 
-    notifying_unique_ptr<T> //exactly the same thing courtesy of 'using' declaration
+    xnr::notifying_unique_ptr<T> //exactly the same thing courtesy of 'using' declaration
 
 Default constructable:
 
-    std::unique_ptr<T> puT;
+    xnr::ptr_to_unique<T> puT;
 
 Can be initialised on construction and assignment by:
   
@@ -56,3 +58,5 @@ Free functions
 	zero_ptrs_to
   
 	make_notifying_unique
+	
+More specs and info to follow
