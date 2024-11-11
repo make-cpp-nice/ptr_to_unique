@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<!-- saved from url=(0095)https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+	
+	<link rel="preconnect" href="https://www.google-analytics.com/">
+
+	<link rel="preconnect" href="https://www.codeproject.com/">
+
+
+	<link rel="preload" href="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/logo250x135.gif" as="image">
+
+
+	<link rel="preload" href="https://www.codeproject.com/App_Themes/CodeProject/Img/logo135-bg.gif" as="image">
+	<link rel="preload" href="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/jquery-3.4.1.min.js.download" as="script" type="text/javascript">
+
+
+	<title>ptr_to_unique&lt;T&gt;, extending std::unique_ptr to support weak secondary smart pointers- CodeProject</title> 
+    
+	<link type="text/css" rel="stylesheet" href="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/Article.min.css">
+
+
+    <script type="text/javascript" async="" src="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/analytics.js.download"></script><script type="text/javascript" src="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/jquery-3.4.1.min.js.download" defer=""></script>
+<script type="text/javascript" src="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/article.min.js.download" defer=""></script>
+
+	
+<meta http-equiv="content-language" content="en-US">
+
+<meta name="Description" content="A smart pointer to an object already owned by a unique_ptr. It doesn&#39;t own the object but it self zeroes when the object is deleted so that it can never dangle.">
+<meta name="Keywords" content="C++">
+<meta name="Author" content="john morrison leon">
+<meta name="Rating" content="General">
+<meta name="Revisit-After" content="1 days">
+<meta name="application-name" content="CodeProject">
+<meta name="google-translate-customization" content="d908bb7ce7aff658-4c2f3a504525c916-g629383f736781a8a-13">
+
+
+
+<link rel="dns-prefetch" href="https://ajax.googleapis.com/"> 
+<link rel="canonical" href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@CodeProject">
+<meta name="og:site_name" content="CodeProject">
+<meta name="twitter:creator" content="@CodeProject">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="11/21/2021 5:02:00 PM">
+<meta property="article:modified_time" content="12/15/2021 3:29:00 PM">
+<meta name="twitter:label1" content="Written by">
+<meta name="twitter:data1" content="john morrison leon">
+<meta name="twitter:label2" content="Reading time">
+<meta name="twitter:data2" content="27 min read">
+<meta property="og:url" content="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor">
+<meta property="og:title" content="ptr_to_unique&lt;T&gt;, extending std::unique_ptr to support weak secondary smart pointers">
+<meta property="og:description" content="A smart pointer to an object already owned by a unique_ptr. It doesn&#39;t own the object but it self zeroes when the object is deleted so that it can never dangle.">
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="apple-touch-icon" sizes="144x144" href="https://www.codeproject.com/favicon/apple-touch-icon.png"> 
+<link rel="icon" type="image/png" sizes="32x32" href="https://www.codeproject.com/favicon/favicon-32x32.png"> 
+<link rel="icon" type="image/png" sizes="16x16" href="https://www.codeproject.com/favicon/favicon-16x16.png"> 
+<link rel="manifest" href="https://www.codeproject.com/favicon/manifest.json"> 
+<link rel="mask-icon" href="https://www.codeproject.com/favicon/safari-pinned-tab.svg" color="#ff9900">
+	<script type="application/ld+json">{
+  "@context": "http://schema.org",
+  "@type": "TechArticle",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor"
+   },
+  "name": "ptr_to_unique, extending std::unique_ptr to support weak secondary smart pointers",
+  "headline": "ptr_to_unique, extending std::unique_ptr to support weak secondary smart pointers",
+  "url": "https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor",
+  "discussionUrl": "https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#_comments",
+  "isFamilyFriendly": "true",
+  "image": "https://www.codeproject.com/App_Themes/CodeProject/Img/Article100.png",
+  "keywords": "C++",
+  "commentCount": "0",
+  "editor" : {
+    "@type" : "Person",
+    "name" : "Editor",
+    "url" : "https://www.codeproject.com/script/Membership/View.aspx?mid=4875381"
+  },
+  "license": "http://www.codeproject.com/info/cpol10.aspx",
+  "publisher" : {
+    "@type" : "Organization",
+    "name" : "CodeProject"
+  },
+  "description": "ptr_to_unique is a smart pointer to an object already owned by a unique_ptr that is guaranteed to read as null if the object has been deleted ensuring that it never dangles.  std::unique_ptr is extended to support this by exploiting its provision for custom deleters to allow secondary smart pointers to be informed of deletions.  The implementation uses a hidden reference counted control block similar to that of shared_ptr/weak_ptr but more lightweight and tailored to the requirements of single ownership.",
+  "articleSection": "C++",
+  "author" : [{
+      "@type" : "Person",
+      "name" : "john morrison leon",
+      "url" : "https://www.codeproject.com/script/Membership/View.aspx?mid=4875381"
+    }],
+  "datePublished": "2021-11-21",
+  "dateCreated": "2021-11-21",
+  "dateModified": "2021-12-15"
+,
+  "contentRating" : {
+    "@type" : "Rating",
+    "ratingValue" : 5.00,
+    "bestRating" : 5,
+    "worstRating" : 1
+  }
+}</script>
+
+<script type="application/ld+json">{
+  "@context": "http://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [{
+    "@type": "ListItem",
+    "position": 1,
+    "item" : {
+      "@id" : "/script/Content/Tag.aspx?tags=Languages",
+      "name" : "Languages"
+    }
+  },{
+    "@type": "ListItem",
+    "position": 2,
+    "item" : {
+      "@id" : "/script/Content/Tag.aspx?tags=Cplusplus",
+      "name" : "C++"
+    }
+  }]
+}</script>
+
+
+	<!--<base target="_top">--><base href="." target="_top">
+	
+    
+
+
+<script type="text/javascript">
+function defrm () { /* thanks twitter */
+    document.write = '';
+    window.top.location = window.self.location;
+    setTimeout(function() { document.body.innerHTML = ''; }, 0);
+    window.self.onload = function(evt) { document.body.innerHTML = ''; };
+}
+
+if (window.top !== window.self) {
+    try {
+        if (window.top.location.host) { /* will throw for all except chrome */ }
+        else { defrm(); /* chrome */ }
+    } catch (ex) { defrm(); /* everyone else */ }
+}
+
+// Specific case where a site is screwing with us.
+if (typeof(DemoUrl) !== 'undefined') {
+    document.write(unescape('%3Cme') + 'ta http' + '-equiv="re' + 'fresh con' +
+                           'tent="1;url=' + DemoUrl + unescape('"%3CE'));
+}
+</script>
+	
+
+
+
+
+
+    <script async="" type="text/javascript" src="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/js"></script>
+    <script type="text/javascript">
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-1735123-1' , {'user_id': '369cd770-3752-45c6-9e7b-6f62cdd25df6'});
+    </script>
+
+<style type="text/css"></style></head>	
+
+<body class="chrome chrome130">
+
+
+
+<a class="access-link" href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#Main"><img alt="Click here to Skip to main content" src="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/t.gif"></a>
+
+
+
+
+<div class="page-background">
+
+	
+	
+
+	
+
+	
+    <div id="ctl00_STM" class="site-top-menu fixed narrow">
+        <div class="main-content">
+            
+
+<div class="container memberbar clearfix flex-container flex-extend">
+
+	<div id="ctl00_MemberBar_GenInfo" class="flex-item align-left">65,938 articles</div>
+	
+	<div id="ctl00_MemberBar_ChangeNotice" class="flex-item align-left">CodeProject
+	is changing. <a href="https://www.codeproject.com/info/Changes.aspx">Read more</a>.</div>
+
+	<div class="flex-item">
+		
+	</div>
+
+	<div class="flex-item align-right">
+
+		
+
+		
+
+		
+	</div>
+</div>
+        </div>
+    </div>
+
+	
+    <div id="ctl00_SH" class="site-header fixed narrow">
+        <div class="main-content">
+            <div class="logo"><a href="https://www.codeproject.com/"><img id="ctl00_Logo" tabindex="1" title="CodeProject" src="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/logo250x135.gif" alt="Home" style="height:135px;width:250px;border-width:0px;"></a></div>
+            <div class="promo"></div>
+        </div>
+    </div>
+
+	
+			
+	
+
+	<div id="A" class="container-content-wrap fixed narrow"> 
+
+	<div class="container-content">
+
+        
+		<div class="clearfix">
+			<div class="container-breadcrumb float-left ">
+				<div><a rel="nofollow" href="https://www.codeproject.com/script/Content/SiteMap.aspx">Articles</a> / <a rel="nofollow" href="https://www.codeproject.com/script/Content/Tag.aspx?tags=Languages">Languages</a> / <a rel="nofollow" href="https://www.codeproject.com/script/Content/Tag.aspx?tags=Cplusplus">C++</a></div>
+			</div>
+
+            <div class="float-left">
+				
+			</div>
+
+			<div class="edit-links float-right">
+				
+
+
+
+ 
+&nbsp;
+
+
+
+
+
+
+
+
+
+
+			</div>
+
+			<div class="article-nav float-right">
+				
+
+
+<div style="display:inline-block;position:relative;top:-6px;margin-right:20px">
+    
+</div>
+
+
+
+ 
+
+<a id="ctl00_ActionLinks_PrintMd" data-tooltip="Print" data-enabletooltip="true" data-width="auto" href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor?display=Print" class="tooltip" title="">
+   <img src="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/print48.png" width="24" height="24" style="border:0">
+<div class="speech-bubble-container-up" style="width:auto">  <div class="speech-bubble-up" style="text-align:center"> Print</div>  <div class="speech-bubble-pointer-up">    <div class="speech-bubble-pointer-up-inner"></div>  </div></div></a>
+
+
+
+<span id="ctl00_ActionLinks_R">
+    
+    
+</span>
+			</div>
+		</div>
+
+        
+		<div class="extended article-container-parts">
+
+			
+		    
+            
+
+			
+			<div id="AT" class="article-container  fixed narrow" style="max-width:inherit;"> 
+
+				<div class="article">
+
+					<form name="aspnetForm" method="post" action="https://www.codeproject.com/Articles/5316026/View.aspx" id="aspnetForm" style="margin:0;padding:0">
+<div>
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="Nn9leOdFUctqdHSQPy2b6g0pul07FxQXVhOolrKCEhOt50EuxTdoSgqHzEBXBYrKOtimAZB+zMPaO7Rul3ZmP7Pn+22548u5tW/dqemk+Ff6zPVTo1asT2ov/LJ6LBBeo11Ag9Zkqzqko2ecc1bgLyij8BHMDZlh/B3Cb3D8lw8qBB2ZlxixVI4de3+G19x6h9C8kAdecw854yTfmdP32grvkM5MSHXGKB7HWDtZ4OzkU0jzQCujV6nhARvp7/8p2jPfaAxRSJ8og+XEROm11zWQFjsOynhOUDuGvH99udgaYW/INm9QnIv5/dSvjt8rA1LkEhPgw4nXa4ts8669f2v4kCeOEl7RJDi2xgIRq//5KO/BuDXR5gqTVAl4YFTeo7+BsaKFpL+zbefsBPtCslbIdYj+xids3hnxY5xB4lLHdLt3IMC03Lx/4a3NOgojIQ3xJtKeTHI38EEwIiTiZIUEVCHsgiheFqf1+UP1PUJF5vAFk35QKuYF5Sk22c7YST3GuUiS7csqvPoQom9PW46ZzCNjCkRGhh3EZUwwngAVph+ylvqxPnP4Jpo6SvVrfUR0LAsKp9UYKbqYKNrg1XNgkPwMoLyzOsnGKtU8JDtYDuOdSl3uqSc5e4O1JSWoIdkK6RFpwImVB8Hu7gYVnakja/KZkG/QBPEtRJOea1h7Y/5uLCkaQSYGeuWAjZO94VUuQAZ43NGjyIzM/WTKbkIwEDvsDCTk3y0qeUs6O2tRlk5ejaDAWMCjCKXRP2pfWwI+3rQ4YSEmM/lIhXvzx8IRZprHuEf5CB6Y84y+rBoS1Aj5R/TMAAAYhAxKi5ktTV+aJsY9HojiWGQ2XLvTc1mTULjTgTW8irF83uCOqfJp/iAC8rzspM+dbGB0cz7EafAYWRtDmAa1qi5G5UNpSbgdt+GZ9DAIBpOK+tbjaVpI+G+oy3WtCDU8QCSLCby4KJbyTVya/X1KFyYObwpJrd7Llx04Jn93Tnsg1hOcUNBSEznsdtOjFTkktCYd7+CkUyCC1/kG8RvbwPPuteHW4Xz1e1vx7udu8sHQaa+rsSMqysDA4PlcxT6jZ3p+KgOz5REZ0ZkgrzUjF7fO7uJd+jZ1RTXbJiUCxzpX0C3c3HWPPl9NQNdDcL5JTOjEQY1qbJyu+b4vdWyMsivlIUvwSNzUY8R641rPkdyR5wbJJm6BTRXonO2cOkbWrOx52ZMMabwfCr+YcZK9RL6allDMy+nTrig2FtGF2p1qDQCXU6XNe1takYCfaAYu0GcQ5xlb58aa66JbZgu34BEfblKnGB7BwlH4HM+Q6QJtsv0X5SvXRT7/Z4z8zdW+EItcjkbeh0za5zvewanyXBiO6wpmdZzzgcASuTNb1qMnodPE+lYBOl/l8SezGxYDRR1Nt7qB624Q3aGocQ6zt0un9pO4YNc2qGobqt4wyrCSpPYaVMWBAsiLa4ShVz3SPnCGjaSFaXZVAlUkOuYezZutkvb168xz1nPiZajlroVthZ4rGXK3A9QFXDXr2HnvDsM8E3C+Y301Sh6FRoYRZphA1bBQ4+IjcFMsf1l4Ph7QjNPnhaJf7AMKYpWdAILdKdRMHHO9hBADyy84qlW2962dP85eGOVRdYiD2F/iFaYsxtTbdULSE/c/xCFcYmuWtQnwEBwspyxik6eR8VwQk8oPozFDe0Gm0aFYBLPwp2jZlEury6LWpPPZG3b35P9iKCKxz0ScvE+Qq6WOx0wgQxFfK80PIKL6TUe78bmEQ3PmM04kQ7fKcZ5VHWqSC/v4lZnCZWbO4eVF6uU0H2SGo8zgBL1RASwhRVcUuRQUvGLe0/SpBKqUix6tzR2o5zGXZJjKhv/CgFruHwIqA6UBpaSAJmlhSVEylxfA8scq/XzJuQ/sDxrsHIXcYe0ry+oZA3YBp+tkAnYR8h827ergOGzI2yVj95KsovmACC5q2k5YRJdrPdj7Hv/iPaIQ1+S8CxTh0jDDs9RxJTEQB5MN1CkKy3umolNlsmiAY1kxv9iKjk15feEb8XagIIaErTvvpq+kJXPTqPzycR+RGU+QO8fFslkAWJngBRxdk1W1atOr8jKGGHHq/cgUyJ0MpR/qJJLSw81PD8JK5xBmB9qpbPq8PtMALPzfdpwRJN8FgTgNQLfluLPTw+b6iV0X32l1VEkie/ji5/fbTWXYvQ51lxv/fvVy3GvwpO69mlSFJw+EPggge3vNWvU/NuSLPscZDJjiC9BwJEWJpq+7i0pEXJNsWRhSq6VPfwM1ihoPNHQ/TBeBFRN7rnwoXQgOUeALrKNUctwiVANw8X58RSPvLlaBmMa8Fd0kY+ouPPswwkdG6LNTQ90woVPbZRQzm22SY5jjcspJ62Bmh1Thh7/61cFv+DnZsFJ94jxpEFGez3LaNcTzVQkreonjwuyX+1pJDVhV+4Pl4JfCwgmBGtzRmJBdmLcHC/rB0z6lMxRZP3p+JSNQLO2hfTuvcYnQ/8oxv6BHnKWH6qoiTSQuw5H8C3GJcE1KlVzc1eaLLnnBExEpqN2jJLj5XSpi8qTOdl2JDLDLtntVEJWvQG3iIuT4PvS38xjMn+XgNW+tHnotwdK+0l87yG2AY9tQXM+oJF+ks4cfTGpDzcQ/q1N3qHW3Wf78YqYDMLJcGl9Y+8GOA0zvuFxjLNXUHAcX0Pr9rL+DYNJJYIJ/OcTXxiae6j4BjG96E0NFRu3oODJMUgwiUSaL8XzqI2EGwvgQwCojl7TRb8SdtUmfQcdy/F+KvE6uv36rCqTsgW747nfYXpRR2c9dv/Zf6ARJpDZCzQEmjeBzh+vlfGM4HkrEHODGx+kZxrnXVHk6a8m4z42zKE+MLeFV4w83QKxWiANGXDf7ZjyCK587epXSGPPwqied20iLg5VlgZ/Fsod5ahQE95kx3x0i3szH0o7ECBfr2R7MHnK9RlAaagZ1eem7Q3vqkstw5JjcBFbwnTW42rcEVqmQbqD0a9QSrm/nCQIR">
+</div>
+
+<div>
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="10C1FD69">
+</div>
+
+					
+					 
+					<div class="header">
+					    <a name="Main"></a>
+					    <a name="_articleTop" id="_articleTop"></a>
+
+					    
+						<div>
+							<span id="ctl00_TagListHorz_TagWrp" class="tags horizontal">
+
+	
+	
+
+	
+	<span id="ctl00_TagListHorz_VisibleTags"><div class="t"><a rel="tag" href="https://www.codeproject.com/Tags/Cplusplus" data-id="78">C++</a></div></span> 
+
+	
+	
+</span>
+
+
+						</div>
+					    <div class="title">
+					        <h1 id="ctl00_ArticleTitle">ptr_to_unique&lt;T&gt;, extending std::unique_ptr to support weak secondary smart pointers</h1>
+					    </div>
+
+                        <div>
+					        
+					        <div class="entry flex-container">
+
+								
+
+                                <div class="flex-item" style="flex:1 1 auto">
+                                    <div class="flex-container" style="justify-content:space-between;flex-wrap:wrap-reverse">
+                                       <span id="ctl00_Authors" class="author flex-item"><a href="https://www.codeproject.com/script/Membership/View.aspx?mid=4875381" rel="author">john morrison leon</a></span> 
+
+                                        <div class="flex-item" style="margin-top:-4px;">
+                                            <div id="ctl00_RateArticle_RatingTable" class="small-text" data-objectref="2_5316026">
+
+	<meta itemprop="upvoteCount" content="8">
+
+
+	<div id="ctl00_RateArticle_RatingRow" class="flex-container rating-container large-stars">
+
+					
+		
+
+		
+		<div class="nowrap tooltip">
+
+			
+			<div id="ctl00_RateArticle_ResultNoHist" class="rating-result"><div class="flex-container rating-stars large-stars"><div><img src="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/star-fill-lg.png" style="width:24px;height:24px"></div><div><img src="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/star-fill-lg.png" style="width:24px;height:24px"></div><div><img src="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/star-fill-lg.png" style="width:24px;height:24px"></div><div><img src="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/star-fill-lg.png" style="width:24px;height:24px"></div><div><img src="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/star-fill-lg.png" style="width:24px;height:24px"></div></div></div>
+			
+
+			
+			
+
+			
+            
+
+			
+                
+
+		</div>
+		
+	
+		
+		<div id="ctl00_RateArticle_VoteCountNoHist" class="rating-votes nowrap">5.00/5  (8 votes)</div>	
+
+		
+
+		
+		<div class="rating-undo" title="Undo vote" style="margin-left:5px;display:none"></div>
+
+		
+		
+	</div>
+
+	
+	
+
+</div>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="flex-container" style="color:#666;font-size:smaller">
+                                        <span id="ctl00_LastUpdated" class="date flex-item-tight" title="Date last updated">15 Dec 2021</span><a id="ctl00_LicenseLink" title="The Code Project Open License (CPOL)" class="license flex-item-tight" href="http://www.codeproject.com/info/cpol10.aspx">CPOL</a><span id="ctl00_ReadingTime" class="stats flex-item-tight">27 min read</span><span id="ctl00_HorizontalStats" class="stats flex-item-tight"><span class="stats"><span title="Views"><img src="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/views32.png" style="width:16px"> 15K</span> &nbsp; <span title="Downloads"><img src="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/download32.png" style="width:16px"> 200</span> &nbsp; </span></span>
+                                    </div>
+                                </div>
+					        </div>
+
+                            
+
+                        </div>
+
+                        <div id="ctl00_DescriptionSpot" class="summary">A smart pointer to an object already owned by a unique_ptr. It doesn't own the object but it self zeroes when the object is deleted so that it can never dangle.</div><span id="ctl00_ThumbnailUrl" class="date" content="https://www.codeproject.com/script/Articles/Images/article100x80.png"></span>			
+
+                    </div>
+                    
+					
+					
+
+					
+
+					
+					<div id="ctl00_Abstract" class="abstract">ptr_to_unique is a smart pointer to an object already owned by a unique_ptr that is guaranteed to read as null if the object has been deleted ensuring that it never dangles.  std::unique_ptr is extended to support this by exploiting its provision for custom deleters to allow secondary smart pointers to be informed of deletions.  The implementation uses a hidden reference counted control block similar to that of&nbsp;shared_ptr/weak_ptr&nbsp;but more lightweight and tailored to the requirements of single ownership.</div>
+
+					
+					
+
+						
+					
+
+					
+
+						
+						<div id="contentdiv" class="text">
+						
+
+
+
+<!-- Article Starts -->
+
+<ul class="download">
+	<li><a href="https://www.codeproject.com/KB/Articles/5316026/ptr_to_unique.zip" id="5316026/ptr_to_unique.zip" name="5316026/ptr_to_unique.zip">Download ptr_to_unique.zip - 3.3 KB</a></li>	<li><a href="https://www.codeproject.com/KB/Articles/5316026/Top_Dog.zip" id="5316026/Top_Dog.zip" name="5316026/Top_Dog.zip">Download VS 2019 demo project - 50.3 KB</a></li>	<li><a href="https://www.codeproject.com/KB/Articles/5316026/top_dog_exe.zip" id="5316026/top_dog_exe.zip" name="5316026/top_dog_exe.zip">Download Windows demo executable - 62.6 KB</a></li></ul>
+
+<h2>Contents</h2>
+
+<ul>
+	<li><a href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#Introduction">Introduction</a></li>	<li><a href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#Background">Background</a></li>	<li><a href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#Design">Design</a></li>	<li><a href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#notifying_unique_ptr">notifying_unique_ptr</a></li>	<li><a href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#ptr_to_unique">ptr_to_unique</a></li>	<li><a href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#make_notifying_unique%20function">make_notifying_unique function</a></li>	<li><a href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#Using%20your%20own%20custom%20deleter">Using Your Own Custom Deleter</a></li>	<li><a href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#Safety%20and%20performance">Safety and Performance</a></li>	<li><a href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#Runtime%20error%20handling">Runtime Error Handling</a></li>	<li><a href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#Using%20the%20code">Using the Code</a></li>	<li><a href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#Top%20Dog">Top Dog Demo App</a></li>	<li><a href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#The%20implementation%20code">The Implementation Code</a></li>	<li><a href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#Summary">Summary </a></li>	<li><a href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#Why%20doesn&#39;t%20unique_ptr%20already%20have">Why doesn't unique_ptr already have a smart weak companion like shared_ptr?</a></li>	<li><a href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#History">History</a></li></ul>
+
+<h2><a id="Introduction" name="Introduction">Introduction</a></h2>
+
+<p>The Standard Library provides three smart pointers, one for single ownership and two for shared ownership:</p>
+
+
+	<table class="ArticleTable"><thead>		<tr>			<td>ownership</td>			<td>&nbsp;</td>			<td><strong>owning</strong></td>			<td>&nbsp;</td>			<td>&nbsp;</td>			<td>&nbsp;</td>			<td><strong>non-owning</strong></td>		</tr>	</thead>	<tbody>		<tr>			<td><strong>single</strong></td>			<td>&nbsp;</td>			<td><code>unique_ptr&lt;T&gt;</code></td>			<td>&nbsp;</td>			<td>&nbsp;</td>			<td>&nbsp;</td>			<td><em>nothing here</em></td>		</tr>		<tr>			<td><strong>shared</strong></td>			<td>&nbsp;</td>			<td><code>shared_ptr&lt;T&gt;</code></td>			<td>&nbsp;</td>			<td>&lt;--</td>			<td>&nbsp;</td>			<td><code>weak_ptr&lt;T&gt;</code></td>		</tr>	</tbody></table>
+
+<p>I think there should be four. There is clearly one missing.</p>
+
+<p>Why is there no non owning smart pointer to point at something already owned by <code>unique_ptr</code> with the smart property that it self zeroes if its pointee is deleted?</p>
+
+<p>I can't answer that question and that troubles me, but I can say two things:</p>
+
+<ul>
+	<li>It is needed and the lack of it has probably for many years been a major cause of project wrecking dangling pointers and the reputational damage they have done to the language.</li>	<li>It can be done and I present a working implementation here.</li></ul>
+
+<h2><a name="Background">Background</a></h2>
+
+<p>It is generallly recommended that any further references to an object owned by <code>unique_ptr </code>should be held as a raw pointer because it has the required property that it doesn't own the object. That is true, but being just a raw pointer, it has the inconvenience that it continues to point at where the object used to be after it has been deleted – it is left dangling. The intuition that the pointer might self-zero when its pointee is deleted is wrong. For that to happen, it needs to be smart.</p>
+
+<p>Consider the following drawing code which has a simple optimisation to avoid having to call the lengthy <code>FindObjectOfInterest</code> function (which returns a reference to a <code>unique_ptr</code>) each time the screen is updated.</p>
+
+<div class="pre-lang" id="premain687730"><div>C++</div><div class="pre-action-link"><span id="copycode687730" class="copy-code" data-index="687730" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre687730" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><strong>object*</strong> g_pObjectOfInterest<strong> </strong>= NULL;
+<span class="code-sdkkeyword">std::vector</span><span class="code-keyword">&lt;</span><strong>unique_ptr<span class="code-keyword">&lt;</span>object<span class="code-keyword">&gt;</span></strong><span class="code-keyword">&gt;</span>  collection;
+
+<span class="code-keyword">void</span> DrawObjectOfInterest()
+{
+    <span class="code-keyword">if</span>(NULL==g_pObjectOfInterest)
+         g_pObjectOfInterest<strong> </strong>= FindObjectOfInterest(collection).get();
+     g_pObjectOfInterest-<span class="code-keyword">&gt;</span>Draw()
+}</pre>
+
+<p>On the surface, it looks well designed but what happens if the object gets deleted? Well, the <code>null</code> test won't catch it because <code>g_pObjectOfInterest</code> still points at where the object used to be so <code>Draw()</code> will be called on a dangling pointer.</p>
+
+<p>Don't think that this danger has stopped programmers from writing code like this. It solves a problem and it is a problem that must be solved. Therefore it is done. If the danger is recognised, then some attempt will have been made to mitigate it,&nbsp;but this is a place where a lot of mistakes get made. As there is no test, you can do to see if a non-zero raw pointer is still valid, mitigation is about writing code to reset pointers and making sure that it gets called when objects get deleted. With no particular strategy recommended for this, these mitigations tend to be ad hoc spaghetti code and even if comprehensive can be very fragile.</p>
+
+<p>I am sure I am not the only programmer working in a single ownership context (most code) who has looked longingly at <code>shared_ptr</code> with its non-owning <code>weak_ptr</code> partner. It is tempting to impose shared ownership on even fundamentally single ownership designs just to have that non-owning <code>weak_ptr </code>which 'knows' when its pointee has been deleted. Like this:</p>
+
+<div class="pre-lang" id="premain662661"><div>C++</div><div class="pre-action-link"><span id="copycode662661" class="copy-code" data-index="662661" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre662661" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><strong>weak_ptr<span class="code-keyword">&lt;</span>object<span class="code-keyword">&gt;</span></strong> g_wpObjectOfInterest<strong> </strong>= NULL;
+<span class="code-sdkkeyword">std::vector</span><span class="code-keyword">&lt;</span><strong>shared_ptr<span class="code-keyword">&lt;</span>object<span class="code-keyword">&gt;</span></strong><span class="code-keyword">&gt;</span>  collection;
+
+<span class="code-keyword">void</span> DrawObjectOfInterest()
+{
+    shared_ptr<span class="code-keyword">&lt;</span>object<span class="code-keyword">&gt;</span> spT(g_wpObjectOfInterest);
+    <span class="code-keyword">if</span>(NULL==spT)
+    {
+         spT = FindObjectOfInterest(collection).get();
+         g_wpObjectOfInterest =  spT;
+    }
+    spT-<span class="code-keyword">&gt;</span>Draw();
+}</pre>
+
+<p><code>weak_ptr </code>has the added inconvenience of having to convert it to a <code>shared_ptr </code>every time you want to do anything with it but the main problem is you no longer have unique ownership and that can matter a lot. In this case, it could mean that an object is removed from the collection but lives on because a <code>shared_ptr</code> somewhere still references it. Being no longer in the collection, it would no longer appear in any enumerations (effectively invisible) but some things might still reference it and may still act on it. That is the kind of mess that can be difficult to detect and sort out.</p>
+
+<p>We should not have to be looking to shared ownership just to get a smart non-owning pointer and keep our pointers from dangling. We should have a smart non-owning pointer that works with <code>unique_ptr </code>and there is no reason why we can´t. It can´t be zero overhead but it can be just the overhead needed for the job and it is a job that needs to be done.</p>
+
+<h2><a id="Design" name="Design">Design</a></h2>
+
+<p>We want a smart pointer, we'll call it <code>ptr_to_unique</code>, that can be initialised from a <code>unique_ptr</code>, has no ownership of the object and therefore never deletes it and is guaranteed to read as <code>null</code> if its pointee gets deleted. The tricky part is the last one. It has to start with; How will our smart pointer even know when the object gets deleted?</p>
+
+<p>Fortunately,&nbsp;<code>unique_ptr </code>allows for custom deleters which get called whenever the object gets deleted. So we can define a custom deleter that notifies our smart pointer of any deletions. We don't want our custom deleter to actually do the deletion. It can leave that to <code>std::default_delete</code> or allow a real custom deleter to be passed through.</p>
+
+<p>It is fortunate that <code>unique_ptr </code>provides for a custom deleter and it is entirely conformant to exploit it in this way. The fundamental design decision was to accept this and harness the opportunity.</p>
+
+<p>So <code>ptr_to_unique</code> requires a modification to the definition of the <code>unique_ptr </code>it is going to reference:</p>
+
+<div class="pre-lang" id="premain184809"><div>C++</div><div class="pre-action-link"><span id="copycode184809" class="copy-code" data-index="184809" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre184809" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-sdkkeyword">std::unique_ptr</span><span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> </pre>
+
+<p>must be changed to:</p>
+
+<div class="pre-lang" id="premain887871"><div>C++</div><div class="pre-action-link"><span id="copycode887871" class="copy-code" data-index="887871" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre887871" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-sdkkeyword">std::unique_ptr</span><span class="code-keyword">&lt;</span>T, <strong>notify_ptrs<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span></strong><span class="code-keyword">&gt;</span></pre>
+
+<p>a using declaration allows this to be written more concisely as:</p>
+
+<div class="pre-lang" id="premain809008"><div>C++</div><div class="pre-action-link"><span id="copycode809008" class="copy-code" data-index="809008" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre809008" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><strong>notifying_unique_ptr<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span></strong></pre>
+
+<p>This also makes the required edit quite simple:</p>
+
+<div class="pre-lang" id="premain407559"><div>C++</div><div class="pre-action-link"><span id="copycode407559" class="copy-code" data-index="407559" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre407559" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-comment">/*</span><span class="code-comment">from*/</span>            <span class="code-sdkkeyword">std::unique_ptr</span><span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span>
+<span class="code-comment">/*</span><span class="code-comment">to*/</span>         notifying_unique_ptr<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span></pre>
+
+<p>Although it is logical to use the <code>notifying_unique_ptr</code> form (and I will do so throughout this article)<br>
+there may be strong cultural reasons for not doing so. <code>notifying_unique_ptr </code>might appear to be a supplanter or imposter of <code>unique_ptr </code>and cause consternation in code reviews. Whereas with...</p>
+
+<div class="pre-lang" id="premain519482"><div>C++</div><div class="pre-action-link"><span id="copycode519482" class="copy-code" data-index="519482" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre519482" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-sdkkeyword">std::unique_ptr</span><span class="code-keyword">&lt;</span>T, notify_ptrs<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span><span class="code-keyword">&gt;</span></pre>
+
+<p>...it is more transparent that you are using an authentic <code>std::unique_ptr</code> and complementing it with a deleter hook that performs notifications.</p>
+
+<p>The usage can be illustrated by recoding the drawing code described above:</p>
+
+<div class="pre-lang" id="premain980390"><div>C++</div><div class="pre-action-link"><span id="copycode980390" class="copy-code" data-index="980390" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre980390" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><strong>ptr_to_unique<span class="code-keyword">&lt;</span>object<span class="code-keyword">&gt;</span></strong> g_puObjectOfInterest;
+<span class="code-sdkkeyword">std::vector</span><span class="code-keyword">&lt;</span><strong>notifying_unique_ptr<span class="code-keyword">&lt;</span>object<span class="code-keyword">&gt;</span></strong><span class="code-keyword">&gt;</span>  collection;
+
+<span class="code-keyword">void</span> DrawObjectOfInterest()
+{
+    <span class="code-keyword">if</span>( ! g_puObjectOfInterest)
+         g_puObjectOfInterest<strong> </strong>= FindObjectOfInterest(collection);
+     g_puObjectOfInterest-<span class="code-keyword">&gt;</span>Draw();
+}</pre>
+
+<p>This code is safe requiring no extra code to be written because <code>g_puObjectOfInterest</code> is a <code>ptr_to_unique </code>and will read as <code>null</code> if the object has been deleted causing it to be re-initialised from <code>FindObjectOfInterest()</code> before calling <code>Draw()</code> on it, as the design intended.</p>
+
+<p>The implementation uses a hidden reference counted control block similar to that of <code>shared_ptr/weak_ptr</code> but lighter and not burdened with thread safety mechanisms. The thread safe sharing of references across threads supported by <code>shared_ptr/weak_ptr</code> is not a possibility with the exclusive ownership of <code>unique_ptr</code>.</p>
+
+<h2><a id="notifying_unique_ptr" name="notifying_unique_ptr">notifying_unique_ptr</a></h2>
+
+<p><code>notifying_unique_ptr&lt;T, D&gt;</code> is not a thing in itself. It is no more than shorthand for:</p>
+
+<div class="pre-lang" id="premain421690"><div>C++</div><div class="pre-action-link"><span id="copycode421690" class="copy-code" data-index="421690" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre421690" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-sdkkeyword">std::unique_ptr</span> <span class="code-keyword">&lt;</span>T, notify_ptrs<span class="code-keyword">&lt;</span>T, D<span class="code-keyword">&gt;</span><span class="code-keyword">&gt;</span>;</pre>
+
+<p>It is the <code>notify_ptrs </code>deleter that enables<code> std::unique_ptr</code> for use with <code>ptr_to_unique</code>. The only changes this makes to the <code>unique_ptr</code> are:</p>
+
+<ul>
+	<li>It passively intercepts deletions to send notifications.</li>	<li>It stores an extra pointer to where the notifications need to be sent.</li></ul>
+
+<p>The extra storage means that it is no longer zero overhead, as a plain <code>unique_ptr </code>would be. So the 'upgrade' should only be made when needed. Where it is needed, it is a small price well worth paying.</p>
+
+<h5>Transfer of Ownership</h5>
+
+<p>The <code>notify_ptrs</code> deleter doesn't change how the object is deleted and that is reflected in transfer of ownership. Transfer from a plain <code>unique_ptr&lt;T, D&gt;</code> to a <code>notifying_unique_ptr&lt;T, D&gt;</code> is allowed:</p>
+
+<div class="pre-lang" id="premain678212"><div>C++</div><div class="pre-action-link"><span id="copycode678212" class="copy-code" data-index="678212" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre678212" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-sdkkeyword">std::unique_ptr</span><span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> apT1 = <span class="code-sdkkeyword">std::make_unique</span><span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span>();
+notifying_unique_ptr<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> <strong>apT2 = <span class="code-sdkkeyword">std::move</span>(apT)</strong>;
+
+<span class="code-comment">//also implicit in
+</span>notifying_unique_ptr<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> apT2 = <span class="code-sdkkeyword">std::make_unique</span><span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span>();</pre>
+
+<p>as is transfer from a <code>notifying_unique_ptr&lt;T, D&gt;</code> to a plain <code>unique_ptr&lt;T, D&gt;</code>:</p>
+
+<div class="pre-lang" id="premain635431"><div>C++</div><div class="pre-action-link"><span id="copycode635431" class="copy-code" data-index="635431" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre635431" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><strong>apT1 = <span class="code-sdkkeyword">std::move</span>(apT2);</strong> <span class="code-comment">//any ptr_to_uniques referencing  apT2 will be zeroed </span></pre>
+
+<p>The latter will cause any <code>ptr_to_unique</code>s that the <code>notifying_unique_ptr</code> may have accrued to be zeroed because the new ownership has no notification mechanism to keep them informed of deletions.</p>
+
+<p>Transfer between one <code>notifying_unique_ptr </code>and another does not zero any <code>ptr_to_unique</code>s. They will continue to reference the same object. If you do not want this, for instance, when passing it to be worked on by another thread. A free function is defined to act on <code>notifying_unique_ptr </code>to allow this:</p>
+
+<div class="pre-lang" id="premain943191"><div>C++</div><div class="pre-action-link"><span id="copycode943191" class="copy-code" data-index="943191" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre943191" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><strong>zero_ptrs_to</strong>(a_notifying_unique_ptr);</pre>
+
+<p>It returns a reference to the <code>notifying_unique_ptr</code> so it can be conveniently inserted in a call to <code>std::move</code> or <code>std::swap</code>:</p>
+
+<div class="pre-lang" id="premain380658"><div>C++</div><div class="pre-action-link"><span id="copycode380658" class="copy-code" data-index="380658" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre380658" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true">notifying_unique_ptr<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> apDest = <span class="code-sdkkeyword">std::move</span>(<strong>zero_ptrs_to</strong>(apSrc));
+</pre>
+
+<h2><a id="ptr_to_unique" name="ptr_to_unique">ptr_to_unique</a></h2>
+
+<p>The code written using <code>ptr_to_unique </code>will look very much like that you would have otherwise written for a raw pointer. Very little editing is required to convert existing code. There are some important differences though:</p>
+
+<p>The declaration is different and ensures that it initialises to <code>nullptr </code>or to point at a valid object.</p>
+
+<div class="pre-lang" id="premain762478"><div>C++</div><div class="pre-action-link"><span id="copycode762478" class="copy-code" data-index="762478" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre762478" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true">ptr_to_unique<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> puT;              <span class="code-comment">//automatically intialises to nullptr
+</span>ptr_to_unique<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> puT(<span class="code-keyword">nullptr</span>);     <span class="code-comment">//explicitly intialises to nullptr
+</span>
+ptr_to_unique<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> puT(a_notifying_unique_ptr);    <span class="code-comment">//will be a valid object or nullptr
+</span>ptr_to_unique<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> puT(another_ptr_to_unique);     <span class="code-comment">//will be a valid object or nullptr</span></pre>
+
+<p>Assignments are as they would be for a raw pointer referencing a <code>unique_ptr</code> but not requiring calls to <code>.get()</code>:</p>
+
+<div class="pre-lang" id="premain228252"><div>C++</div><div class="pre-action-link"><span id="copycode228252" class="copy-code" data-index="228252" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre228252" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true">ptr_to_unique<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> puT = <span class="code-keyword">nullptr</span>;                  <span class="code-comment">//will be nullptr
+</span>ptr_to_unique<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> puT = a_notifying_unique_ptr;   <span class="code-comment">//will be a valid object or nullptr
+</span>ptr_to_unique<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> puT = another_ptr_to_unique;    <span class="code-comment">//will be a valid object or nullptr</span></pre>
+
+<p>but it will not allow the following incorrect assignments to compile:</p>
+
+<div class="pre-lang" id="premain79783"><div>C++</div><div class="pre-action-link"><span id="copycode79783" class="copy-code" data-index="79783" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre79783" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true">ptr_to_unique<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> puT= some_raw_pointer;          <span class="code-comment">//error, source not owned by a unique_ptr
+</span>notifying_ unique_ptr<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> apT =  a_ptr_to_unique; <span class="code-comment">//error, non-owner cannot initialise owner
+</span>ptr_to_unique<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> puT= make_unique<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span>();          <span class="code-comment">//error, ptr_to_unique cannot take ownership</span></pre>
+
+<p>The clarification of owner and non-owner types generates an extra set of grammatical rules that the compiler enforces. This helps to keep code clear and coherent.</p>
+
+<p>The boolean and dereference operators also operate as they would for a raw pointer:</p>
+
+<div class="pre-lang" id="premain680591"><div>C++</div><div class="pre-action-link"><span id="copycode680591" class="copy-code" data-index="680591" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre680591" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><strong><span class="code-keyword">if</span>(</strong>pT<strong>)</strong>
+    pT → do_something();</pre>
+
+<p>Equality comparison can be used with a <code>notifying_unique_ptr</code> a raw pointer or another <code>ptr_to_unique</code>.</p>
+
+<div class="pre-lang" id="premain480435"><div>C++</div><div class="pre-action-link"><span id="copycode480435" class="copy-code" data-index="480435" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre480435" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-keyword">if</span>(puT <strong>==</strong> pT)
+    puT → do_something();
+<span class="code-keyword">if</span>(puT <strong>!=</strong> pT)
+    puT → do_something_else();</pre>
+
+<p>Pointer arithmetical comparisons (&gt; and &lt;) are not supported nor are any other pointer arithmetical operations (++, –, + etc.) .</p>
+
+<p><code>ptr_to_unique</code> can be declared as a <code>const</code> and set to point at a valid object on initialisation but it will still self zero if that object is deleted. Otherwise, it behaves as <code>const </code>– you can never point it anywhere else:</p>
+
+<div class="pre-lang" id="premain191424"><div>C++</div><div class="pre-action-link"><span id="copycode191424" class="copy-code" data-index="191424" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre191424" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><strong><span class="code-keyword">const</span></strong> <strong>ptr_to_unique<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span></strong> puT = a_notifying_unique_ptr;  <span class="code-comment">//exclusively for tracking this
+</span>                                                      <span class="code-comment">//while it lives.</span></pre>
+
+<p><code>ptr_to_unique</code> provides a <code>get()</code> dot method which returns a raw pointer to the object being referenced:</p>
+
+<div class="pre-lang" id="premain556381"><div>C++</div><div class="pre-action-link"><span id="copycode556381" class="copy-code" data-index="556381" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre556381" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true">T* pT = puT<strong>.get()</strong>;</pre>
+
+<p>You will need this when passing the object being referenced into a function that takes a raw pointer.</p>
+
+<p>While casting from base to derived class is dangerous, it is sometimes impossible to avoid. To enable this,&nbsp;<code>ptr_to_unique</code> supports a dot method:</p>
+
+<div class="pre-lang" id="premain847078"><div>C++</div><div class="pre-action-link"><span id="copycode847078" class="copy-code" data-index="847078" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre847078" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true">ptr_to_unique<span class="code-keyword">&lt;</span>Derived<span class="code-keyword">&gt;</span> puDerived =  puT.<strong>static_pointer_cast<span class="code-keyword">&lt;</span>Derived<span class="code-keyword">&gt;</span>()</strong>;</pre>
+
+<h2><a id="make_notifying_unique function" name="make_notifying_unique function">make_notifying_unique function</a></h2>
+
+<p>You can initialise a <code>notifying_unique_ptr </code>with <code>std::make_unique</code> because &nbsp;<code>notifying_unique_ptr</code> can take ownership from a plain <code>unique_ptr</code>,</p>
+
+<div class="pre-lang" id="premain254841"><div>C++</div><div class="pre-action-link"><span id="copycode254841" class="copy-code" data-index="254841" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre254841" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true">notifying_unique_ptr<span class="code-keyword">&lt;</span>my_class<span class="code-keyword">&gt;</span> apClassObj = <span class="code-sdkkeyword">std::make_unique</span><span class="code-keyword">&lt;</span>my_class<span class="code-keyword">&gt;</span>(parm1, parm2, …);</pre>
+
+<p>However if you try to use <code>auto</code> to avoid verbosity and repetition</p>
+
+<div class="pre-lang" id="premain393487"><div>C++</div><div class="pre-action-link"><span id="copycode393487" class="copy-code" data-index="393487" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre393487" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-keyword">auto</span> apClassObj = <span class="code-sdkkeyword">std::make_unique</span><span class="code-keyword">&lt;</span>my_class<span class="code-keyword">&gt;</span>(parm1, parm2, …);</pre>
+
+<p>then what you will get is a plain <code>unique_ptr </code>that won't support <code>ptr_to_unique</code>.</p>
+
+<p>Instead you can use &nbsp;<code>make_notifying_unique&nbsp;</code></p>
+
+<div class="pre-lang" id="premain234574"><div>C++</div><div class="pre-action-link"><span id="copycode234574" class="copy-code" data-index="234574" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre234574" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-keyword">auto</span> apClassObj = make_notifying_unique<span class="code-keyword">&lt;</span>my_class<span class="code-keyword">&gt;</span>(parm1, parm2, …);</pre>
+
+<p>This way you are more explicitly asking for what you want and that is what you will get. A <code>notifying_unique_ptr&lt;my_class&gt;</code> that will support &nbsp;<code>ptr_to_unique</code></p>
+
+<p><code>make_notifying_unique </code>has one more trick up its sleeve which is revealed in the next section.</p>
+
+<h2><a id="Using your own custom deleter" name="Using your own custom deleter">Using Your Own Custom Deleter</a></h2>
+
+<p>To provide your own custom deleter for&nbsp;<code>notifying_unique_ptr</code>, simply pass it as the second template parameter as you would with&nbsp;<code>unique_ptr</code>:</p>
+
+<div class="pre-lang" id="premain535154"><div>C++</div><div class="pre-action-link"><span id="copycode535154" class="copy-code" data-index="535154" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre535154" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true">xnr::notifying_unique_ptr<span class="code-keyword">&lt;</span>T, MyDeleter<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span><span class="code-keyword">&gt;</span> apT;</pre>
+
+<p>or if you use the uncontracted form, pass it as the second template parameter to&nbsp;<code>notify_ptrs</code>:</p>
+
+<div class="pre-lang" id="premain179977"><div>C++</div><div class="pre-action-link"><span id="copycode179977" class="copy-code" data-index="179977" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre179977" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-sdkkeyword">std::unique_ptr</span><span class="code-keyword">&lt;</span>T, notify_ptrs<span class="code-keyword">&lt;</span>T, MyDeleter<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span><span class="code-keyword">&gt;</span> apT;</pre>
+
+<p>Unlike <code>std::make_unique,</code> you can use <code>make_notifying_unique </code>with a custom deleter but it must implement a static <code>allocate </code>method with the following signature:</p>
+
+<div class="pre-lang" id="premain522257"><div>C++</div><div class="pre-action-link"><span id="copycode522257" class="copy-code" data-index="522257" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre522257" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-keyword">template</span> <span class="code-keyword">&lt;</span><span class="code-keyword">class</span>... Types<span class="code-keyword">&gt;</span>
+<span class="code-keyword">static</span> <span class="code-keyword">inline</span> T* allocate(Types&amp;&amp;... _Args)</pre>
+
+<p>It must be static because it will be called in a void before anything gets constructed. Here is an example of a compliant allocating deleter that simply replicates the defaults.</p>
+
+<div class="pre-lang" id="premain914458"><div>C++</div><div class="pre-action-link"><span id="copycode914458" class="copy-code" data-index="914458" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre914458" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-keyword">template</span> <span class="code-keyword">&lt;</span><span class="code-keyword">class</span> T<span class="code-keyword">&gt;</span>
+<span class="code-keyword">struct</span> an_allocating_deleter
+{
+    <span class="code-comment">//required by std::unique_ptr
+</span>    <span class="code-keyword">void</span> <span class="code-keyword">operator</span>()(T* p)
+    {
+        <span class="code-comment">//replace with your deletion code
+</span>        <span class="code-keyword">delete</span> p;
+    }
+    <span class="code-comment">//required by make_notifying_unique
+</span>    <span class="code-keyword">template</span> <span class="code-keyword">&lt;</span><span class="code-keyword">class</span>... Types<span class="code-keyword">&gt;</span>
+    <span class="code-keyword">static</span> <span class="code-keyword">inline</span> T* allocate(Types&amp;&amp;... _Args)
+    {
+        <span class="code-comment">//replace with your allocation code
+</span>        <span class="code-keyword">return</span> <span class="code-keyword">new</span> T(<span class="code-sdkkeyword">std::forward</span><span class="code-keyword">&lt;</span>Types<span class="code-keyword">&gt;</span>(_Args)...);
+    }
+};</pre>
+
+<p>The allocating deleter is a good way to encapsulate and centralise your matching allocation and deletion code and ensure that their application doesn't get wires crossed.</p>
+
+<p>You can create a <code>notifying_unique_ptr </code>with such a deleter as follows</p>
+
+<div class="pre-lang" id="premain490006"><div>C++</div><div class="pre-action-link"><span id="copycode490006" class="copy-code" data-index="490006" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre490006" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-keyword">auto</span> apClassObj = 
+&nbsp;         make_notifying_unique<span class="code-keyword">&lt;</span>my_class, an_allocating_deleter<span class="code-keyword">&lt;</span>my_class<span class="code-keyword">&gt;</span><span class="code-keyword">&gt;</span>(parm1, parm2, …);</pre>
+
+<p>You can also initialise a plain zero overhead <code>unique_ptr </code>with &nbsp;<code>make_notifying_unique</code> and pass in a custom allocating deleter to enjoy the same benefits..&nbsp;</p>
+
+<div class="pre-lang" id="premain578326"><div>C++</div><div class="pre-action-link"><span id="copycode578326" class="copy-code" data-index="578326" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre578326" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-sdkkeyword">std::unique_ptr</span><span class="code-keyword">&lt;</span>my_class<span class="code-keyword">&gt;</span> apClassObj = 
+&nbsp;         make_notifying_unique<span class="code-keyword">&lt;</span>my_class, an_allocating_deleter<span class="code-keyword">&lt;</span>my_class<span class="code-keyword">&gt;</span><span class="code-keyword">&gt;</span>(parm1, parm2, …);</pre>
+
+<p>This is possible because ownership can be transferred from &nbsp;<code>notifying_unique_ptr </code>to std::<code>unique_ptr</code>.&nbsp;</p>
+
+<p>Yes it looks wrong to initialise a plain <code>unique_ptr</code> with <code>make_notifying_unique </code>and half of the initialisation effort of the intermediate &nbsp;<code>notifying_unique_ptr </code>will get thown away. So to save blushes, a <code>custom_make_unique</code> function is also provided.</p>
+
+<div class="pre-lang" id="premain731917"><div>C++</div><div class="pre-action-link"><span id="copycode731917" class="copy-code" data-index="731917" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre731917" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-keyword">auto</span> apClassObj = custom_make_unique<span class="code-keyword">&lt;</span>my_class, an_allocating_deleter<span class="code-keyword">&lt;</span>my_class<span class="code-keyword">&gt;</span><span class="code-keyword">&gt;</span>(parm1, parm2, …);</pre>
+
+<p><code>apClassObj </code>will be a plain <code>std::unique_ptr</code> correctly initialised with no intermediate &nbsp;<code>notifying_unique_ptr</code>.</p>
+
+<p>If you need to access your deleter after construction, you will find that notifying_unique_ptrs <code>get_deleter()</code> method will return the <code>notify_ptrs </code>deleter, not the one you passed.&nbsp;</p>
+
+<div class="pre-lang" id="premain808116"><div>C++</div><div class="pre-action-link"><span id="copycode808116" class="copy-code" data-index="808116" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre808116" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-keyword">auto</span> deleter =  apClassObj.get_deleter();
+<span class="code-comment">//deleter will be a  notify_ptrs
+</span>deleter.my_data = x; <span class="code-comment">//error notify_ptrs doesn't have a my_data member</span></pre>
+
+<p>However the <code>notify_ptrs </code>deleter offers an implicit conversion to your passed in custom deleter. You just have to ask for it.</p>
+
+<div class="pre-lang" id="premain642361"><div>C++</div><div class="pre-action-link"><span id="copycode642361" class="copy-code" data-index="642361" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre642361" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true">an_allocating_deleter<span class="code-keyword">&lt;</span>my_class<span class="code-keyword">&gt;</span> deleter =  apClassObj.get_deleter();
+<span class="code-comment">//deleter will be an_allocating_deleter
+</span>deleter.my_data = x; <span class="code-comment">//ok if your custom deleter has a my_data member</span></pre>
+
+<h2><a id="Safety and performance" name="Safety and performance">Safety and Performance</a></h2>
+
+<p>Inevitably, there is some trade off between safety and performance and <code>ptr_to_unique </code>prioritises safety. It will not dangle. It is designed to be above all a reliable infrastructure node that can safely be used in a fairly casual manner allowing you to design and build with it confidently.</p>
+
+<p>Like <code>shared_ptr</code>, there is an overhead when a <code>ptr_to_unique </code>is initialised, including either allocating a control block or bumping a reference count. Unlike <code>shared_ptr </code>and <code>unique_ptr</code>, there is also an overhead on every dereference as it checks the control block for validity first.</p>
+
+<p>Of course, if you have written your code correctly, you will have already checked its validity - making all those checks on dereference redundant. The problem is that only you know this and are you absolutely sure? Sometimes, you can be. You may be further discomforted by knowing that all you get for all this checking is that, should you make a mistake, your program will issue a defined error message and terminate instead of running on with a dangling pointer. If it happens, then you will be grateful for that critical distinction. A dangling pointer can do a lot of damage.</p>
+
+<p>The dereference overhead is only a few instructions and will be negligible unless you are working <code>ptr_to_unique</code> very hard in a very atomic manner., e.g., using it to dereference class member variables individually and doing very little with them. In these cases, if you are sure you have checked the validity first and that it will stay valid while you work on it, you can simply extract the raw pointer into local scope (having checked its validity as a <code>ptr_to_unique</code>) and work with that instead.</p>
+
+<div class="pre-lang" id="premain514383"><div>C++</div><div class="pre-action-link"><span id="copycode514383" class="copy-code" data-index="514383" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre514383" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true">ptr_to_unique<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> puT;
+
+<span class="code-comment">//some code that may or may not initialise puT
+</span>
+<strong><span class="code-keyword">if</span>(puT)</strong>
+{
+         T* <strong>pT = puT.get()</strong>; <span class="code-comment">// pT does no checking and has no protection against dangling
+</span>
+         <span class="code-comment">//some code that <strong>works pT very hard</strong>
+</span>         <span class="code-comment">//<strong>be sure</strong> not to call anything that might delete the object
+</span>}</pre>
+
+<p>I am sure that bare metal purists will do this habitually and that is fine as long as it is accompanied by the required due diligence to ensure it is being done safely. Tightly scoping the lifetime of the extracted raw pointer helps greatly with this.</p>
+
+<p>For the most part, it is simpler and safer to work directly with the <code>ptr_to_unique</code>.</p>
+
+<div class="pre-lang" id="premain152139"><div>C++</div><div class="pre-action-link"><span id="copycode152139" class="copy-code" data-index="152139" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre152139" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><strong><span class="code-keyword">if</span>(puT)</strong>
+    <strong>puT-<span class="code-keyword">&gt;</span></strong>DoSomthing();</pre>
+
+<h2><a id="Runtime error handling" name="Runtime error handling">Runtime error handling</a></h2>
+
+<p><code>ptr_to_unique</code> will never give you a dangling pointer to run with but it can give you a null pointer. If you write code that deferences a null pointer then you have a runtime error - one that the compiler cannot know about and catch. Execution cannot proceed as intended and therefore you will want it to stop and flag what has happened. C++ provides exceptions for this, even allowing you to <code>try/catch</code> them and recover execution in a wider scope.&nbsp;</p>
+
+<p>The scheme for <code>ptr_to_unique</code> is:</p>
+
+<p><strong>calling the <code>→ </code>operator on a null pointer.</strong><br>
+It returns the null pointer which will immediately provoke a null dereference exception in the user code, exactly where the bad dereference was made. This is the same as with <code>unique_ptr</code>.&nbsp;</p>
+
+<p><strong>calling the <code>* </code>operator on a null pointer.</strong><br>
+It throws an immediate exception so you don't get as far as symbolising a null object. Stepping back through the call stack will take you directly to where the bad dereference was made This differs from &nbsp;<code>unique_ptr</code> which simply returns a null object and relies on an exception being thrown the first time you try to do anything with the null object you have succeeded in symbolising. This is less convenient but it is better than breaking the zero overhead of <code>unique_ptr </code>by impeding a dereference with a non zero test.<br>
+<code>ptr_to_unique</code> has to do a test on every dereference anyway so there is no further cost in throwing an exception when an error condition is clearly occurring.</p>
+
+<p>They are designed to bring your attention as quickly as possible to the location of the error in your code.</p>
+
+<h2><a id="Using the code" name="Using the code">Using the Code</a></h2>
+
+<p>First, include <em>ptr_to_unique.h</em>. The download link <a href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#5316026/ptr_to_unique.zip">ptr_to_unique.zip</a> is at the top of the page.</p>
+
+<p>This will bring in <code>&lt;memory&gt;</code> from the standard library so it must exist in your include path.</p>
+
+<p>Everything is defined within the namespace <code>xonor</code>. A shorter alias <code>xnr</code> is provided that is more convenient to code with, particularly if you have auto complete. So the declarations will be:</p>
+
+<div class="pre-lang" id="premain612093"><div>C++</div><div class="pre-action-link"><span id="copycode612093" class="copy-code" data-index="612093" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre612093" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true">x<strong>nr::notifying_unique_ptr</strong><span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> apT;
+
+<span class="code-comment">//or in the unabbreviated  form
+</span><span class="code-sdkkeyword">std::unique_ptr</span><span class="code-keyword">&lt;</span>T, <strong>xnr::notify_ptrs<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span></strong><span class="code-keyword">&gt;</span></pre>
+
+<p>and:</p>
+
+<div class="pre-lang" id="premain689316"><div>C++</div><div class="pre-action-link"><span id="copycode689316" class="copy-code" data-index="689316" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre689316" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><strong>xnr:: ptr_to_unique<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span></strong> puT = apT;</pre>
+
+<p><code>ptr_to_unique </code>is not zero overhead and the <code>notify_ptrs </code>deleter adds storage to <code>notifying_unique_ptr</code>. For that reason, it should not be used as a canonical replacement for every pointer that references a <code>unique_ptr</code>. It is only required for pointers that are set and then retrieved later after other things have been allowed to happen.</p>
+
+<p>The uses of <code>ptr_to_unique </code>can be remedial or innovative.</p>
+
+<p>Let us look at remedial actions first.</p>
+
+<p style="margin-left: 40px">The first step is to look for where you need to use <code>ptr_to_unique</code>. Start by looking for pointers that are class members or globals.&nbsp;Their persistence potentially exposes them to dangling.</p>
+
+<p style="margin-left: 40px">Those that persist from one event handler to another are at very high risk because anything may have happened including the user deciding to close the application. Use <code>ptr_to_unique</code> for these.</p>
+
+<p style="margin-left: 40px">Those that persist from one function call to another are also at risk although there will be many cases where careful examination can determine that there is no risk.</p>
+
+<p style="margin-left: 40px">Finally, look for rare cases where a function body may accidentally delete the object it is working with. A classic is calling <code>PeekMessage</code> in the middle of some intensive processing to prevent the GUI from appearing frozen. The object you are working on may not be there after <code>PeekMessage </code>returns. If you use <code>ptr_to_unique</code>, you will at least be able to check if it is still there.</p>
+
+<p style="margin-left: 40px">Once you have found which pointers need to be <code>ptr_to_unique</code>, you will then need to 'upgrade' the <code>unique_ptr </code>they reference to a <code>notifying_unique_ptr</code>.</p>
+
+<p style="margin-left: 40px">Remember that you still have to test a <code>ptr_to_unique </code>for non-<code>null</code> when you pick it up to use. It doesn't guarantee that the pointer is valid – it isn't an owner. It guarantees that the non-<code>null</code> test is a reliable test of its validity.</p>
+
+<p style="margin-left: 40px">Correct use of <code>ptr_to_unique </code>is strictly enforced during compilation. But of course, that won't protect you from run-time errors such as a <code>null</code> dereference - those will be caught at run-time.</p>
+
+<p>Now for innovative use.</p>
+
+<p style="margin-left: 40px">In real life, we hold direct references to each other (phone numbers, e-mail addresses, etc.) and we find this very useful. We can reference each other and we can pass references we have onto other people. Yet with software, we shy away from letting objects reference each other for fear of finding our pointers dangling. This fear limits our design and our imagination.</p>
+
+<p style="margin-left: 40px"><code>ptr_to_unique </code>removes these limits. You can happily allow objects to reference each other and if one dies, then you will know because its reference (the <code>ptr_to_unique</code>) will read as <code>null</code>. You can also allow objects to pass on references that they hold to other objects. All <code>ptr_to_unique </code>references to an object will read as <code>null</code> if the object is deleted, regardless of how the <code>ptr_to_unique</code> was obtained. This freedom to fearlessly propagate references to volatile objects is exemplified in the demonstration application described below.</p>
+
+<h2><a id="Top Dog" name="Top Dog">Top Dog</a> - The Demonstration Application</h2>
+
+<p>Microsoft Visual Studio 2019 project for Windows. The download link <a href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#5316026/Top_Dog.zip">Top_Dog.zip</a> is at the top of the page. Or you can just download the Windows executable and run it <a href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor#5316026/Top_Dog_Exe.zip">Top_Dog_Exe.zip</a></p>
+
+<p><img src="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/TopDogDynamic.png" style="height: 278px; width: 640px"></p>
+
+<p>The goal of this application is to set up a dynamic where <code>ptr_to_unique </code>references are constantly being taken, held, propagated and used while the objects that they reference are being constantly destroyed in an unpredictable manner. I wanted to demonstrate not just that <code>ptr_to_unique </code>is robust enough to take this kind of battering but also that using it in this way can be useful for modelling a plurality of objects that form relationships with each other. In order to give it a focus that makes some sense to work with, I decided to use the familiar Top Dog metaphor to hang it on.</p>
+
+<p>The application models a collection of dogs who are willing to follow a strong boss but also have some desire to be a boss themselves. They encounter each other at random constantly resolving the issue of who is strongest and should be adopted as the boss and occasionally fighting to the death over it. They also weaken and die with old age and Top Dogs (a boss that has no boss) can be fertile and produce new dogs.</p>
+
+<p>The collection of dogs is represented by a <code>std::vector </code>of <code>notifying_unique_ptr</code>s:</p>
+
+<div class="pre-lang" id="premain611881"><div>C++</div><div class="pre-action-link"><span id="copycode611881" class="copy-code" data-index="611881" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre611881" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-sdkkeyword">std::vector</span><span class="code-keyword">&lt;</span>xnr::notifying_unique_ptr<span class="code-keyword">&lt;</span>Dog<span class="code-keyword">&gt;</span><span class="code-keyword">&gt;</span> dogs;</pre>
+
+<p>When dogs are born, they are added to the collection and when they die, they are removed.</p>
+
+<p>The action is all about who each dog takes to be their boss and that is represented by each<br>
+dog holding a <code>ptr_to_unique </code>that points to their boss.</p>
+
+<div class="pre-lang" id="premain206147"><div>C++</div><div class="pre-action-link"><span id="copycode206147" class="copy-code" data-index="206147" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre206147" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true">xnr::ptr_to_unique<span class="code-keyword">&lt;</span>Dog<span class="code-keyword">&gt;</span> puBoss;</pre>
+
+<p><code>puBoss</code> can be <code>null</code> and it can become <code>null</code> so it is tested before use after any action has been allowed to happen. This is how you always use a <code>ptr_to_unique</code>.</p>
+
+<p>One dog may be persuaded to adopt another dog as his boss:</p>
+
+<div class="pre-lang" id="premain726943"><div>C++</div><div class="pre-action-link"><span id="copycode726943" class="copy-code" data-index="726943" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre726943" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true">puBoss = apOtherDog;</pre>
+
+<p>or adopt the other dog's boss as his boss:</p>
+
+<div class="pre-lang" id="premain471329"><div>C++</div><div class="pre-action-link"><span id="copycode471329" class="copy-code" data-index="471329" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre471329" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true">puBoss = apOtherDog-<span class="code-keyword">&gt;</span>puBoss;</pre>
+
+<p>This produces a dissemination of references to the stronger dogs that would be very difficult to track and manage without the use of <code>ptr_to_unique</code>.</p>
+
+<p>There is a bit of diversity to the rules of engagement to keep it interesting and it has been tuned, not to be realistic, but to produce a dynamic that is disruptive and unpredictable but sustainable enough to run for a while. This is illustrated graphically as it happens. I became curious about the way the dog population evolved so added the means to run the model at a much faster rate without display [Jump 500000] and an interactive history view to examine the result of many interactions.</p>
+
+<p><img src="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/TopDogHistory.png" style="height: 311px; width: 640px"></p>
+
+<p>It would be problematic to have used shared ownership so that <code>weak_ptr</code> can be used instead of <code>ptr_to_unique </code>because the death of a dog must be definitive and only unique ownership can properly encapsulate this. The model may be course and a poor match to reality but let us at least get it right that dead means dead.</p>
+
+<p>It is just a spoof model contrived to show that <code>ptr_to_unique </code>can open up new ways of doing things but I have had a lot of fun with it and remain fascinated by some aspects of its behaviour.</p>
+
+<p>I have released the demo app code untidied, warts and all, because it works and I wanted to get on with releasing <em>ptr_to_unique.h</em> which is carefully coded, tidied up and ready for use. I will be tidying up the demo app as I continue to mess about with it.</p>
+
+<h2><a id="The implementation code" name="The implementation code">The Implementation Code</a></h2>
+
+<p><code>ptr_to_unique</code>, like other smart pointers is intended to be placed in a library and usable almost as a language element. That means it must work correctly in any context and this requires a very high level of correctness in how it is coded. I invite anyone to examine <em>ptr_to_unique.h</em> to check that this has been achieved or otherwise. I have tried to present the code so that this is a reasonable task.</p>
+
+<p>What follows is not a complete description. I hope the code largely speaks for itself, but I think it is helpful to give an overview of the architecture and to explain some of the not so obvious design decisions.</p>
+
+<p><img src="./ptr_to_unique_T_, extending std__unique_ptr to support weak secondary smart pointers- CodeProject_files/Implementation.png" style="height: 264px; width: 640px"></p>
+
+<p>Each <code>ptr_to_unique</code> carries its own local pointer to the object but that pointer is only accessed once the valid count has been checked in the Control Block. If the valid count is zero, then the local pointer is ignored and the <code>ptr_to_unique</code> reads as <code>null</code>. When the object is deleted, the <code>notify_ptrs </code>deleter accesses the Control Block and sets the valid count to zero so that all <code>ptr_to_unique</code>s referencing it will now read as <code>null</code>.<br>
+The Control Block lives as long as anything is referencing it. The <code>ptr_to_unique</code> reference count keeps track of this. When <code>ptr_to_unique </code>reference count is zero and the valid count is zero, the Control Block will delete itself.</p>
+
+<p>There is nothing revolutionary about the design. The only thing that is novel is deciding to do it in this context.</p>
+
+<h5>Division of Labour</h5>
+
+<p><code>ptr_to_unique </code>and the <code>notify_ptrs </code>deleter are typed (templated) by the object they point at. So any code that doesn't get optimised away could potentially be instantiated multiple times. However, the Control Block and the pointers that reference it are not templated on the object type and therefore code using them should be instantiated once only. To ensure that the compiler sees this, the labour is divided between that which is templated on the object type (blue lines on the diagram) and that which is not (red lines on the diagram).</p>
+
+<p>This is done by creating a wrapper for the pointer to the control block which encapsulates all operations involving the <code>ControlBlock</code> including testing if it exists and allocating it when required. This is called <code>_ptr_to_unique_cbx</code> (not templated) and its methods are the only access to the control block which is declared privately within it.</p>
+
+<p>Any part of <code>ptr_to_unique </code>operation that does not depend on the object type is delegated to <code>_ptr_to_unique_cbx</code>.</p>
+
+<h5>The notify_ptrs deleter</h5>
+
+<p>The <code>notify_ptrs</code> deleter is a key component and also the most innovative. Its design is not obvious and requires some explanation.</p>
+
+<p>The <code>notify_ptrs</code> deleter must implement <code>operator()(T* p)</code> , which <code>unique_ptr</code> will call to do the deletion, and use this to achieve its key functionality which is tentatively represented here as pseudo code.</p>
+
+<div class="pre-lang" id="premain698736"><div>C++</div><div class="pre-action-link"><span id="copycode698736" class="copy-code" data-index="698736" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre698736" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-keyword">void</span> <span class="code-keyword">operator</span>()(T* p)
+{
+    Mark Control Block invalid
+    Let passed <span class="code-keyword">in</span> deleter <span class="code-keyword">do</span> the deleting
+}</pre>
+
+<p>At this stage, I have left it as pseudo code because how <code>notify_ptrs</code> should carry the passed in deleter <code>D</code> and the pointer to the control block is inconveniently conditioned by the requirements of transfer of ownership.</p>
+
+<p><code>notify_ptrs</code> should not impede transfer of ownership between <code>notifying_unique_ptr</code> and plain <code>unique_ptr</code>. Also in the case of transfer from <code>notifying_unique_ptr</code> to plain <code>unique_ptr</code>,&nbsp;it must zero any <code>ptr_to_unique</code>s referencing the owned object. This must be done because otherwise those <code>ptr_to_unique</code>s would be left with no notifications of deletion and could be left dangling.</p>
+
+<p>We can get a smooth transfer from <code>notifying_unique_ptr </code>to plain <code>unique_ptr </code>simply by deriving <code>notify_ptrs</code> from the passed in deleter <code>D</code>. This will also give us Empty Base Class Optimisation and <code>D </code>is typically empty as in <code>std::default_delete</code></p>
+
+<div class="pre-lang" id="premain739422"><div>C++</div><div class="pre-action-link"><span id="copycode739422" class="copy-code" data-index="739422" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre739422" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-keyword">struct</span> notify_ptrs : <span class="code-keyword">public</span> D
+{</pre>
+
+<p>But this makes the transfer too smooth. It is so language elemental to take the base class of what is offered that there is nowhere to put code to intercept it and zero those <code>ptr_to_unique</code>s.</p>
+
+<p>So instead <code>notify_ptrs</code> is not derived from <code>D</code> and a conversion operator is provided as the only path to achieve the transfer. And it is in this that we can put code to zero those <code>ptr_to_unique</code>s.</p>
+
+<div class="pre-lang" id="premain380121"><div>C++</div><div class="pre-action-link"><span id="copycode380121" class="copy-code" data-index="380121" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre380121" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-keyword">operator</span> D&amp; ()
+{
+    Mark Control Block invalid
+    <span class="code-keyword">return</span> passed <span class="code-keyword">in</span> deleter D
+}</pre>
+
+<p>The problem now is that if we hold the passed in deleter <code>D</code> as member then, even if empty, it will occupy storage just to have a distinct address from the pointer to the control block.</p>
+
+<div class="pre-lang" id="premain886165"><div>C++</div><div class="pre-action-link"><span id="copycode886165" class="copy-code" data-index="886165" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre886165" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-keyword">struct</span> notify_ptrs
+{
+    D deleter;
+    _ptr_to_unique_cbx cbx;</pre>
+
+<p>We have lost the Empty Base Class Optimisation that would have come from deriving from <code>D</code> rather than containing it. We want that Empty Base Class Optimisation back and we can have it with the following contrivance which defines how the passed in deleter <code>D</code> and the pointer to the control block are held.</p>
+
+<div class="pre-lang" id="premain384961"><div>C++</div><div class="pre-action-link"><span id="copycode384961" class="copy-code" data-index="384961" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre384961" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-keyword">struct</span> notify_ptrs <span class="code-comment">// if we derive from D, operator D&amp; () will never be called
+</span>{
+private:
+    <span class="code-comment">//D will typically be dataless so we still need empty base class optimisation
+</span>    <span class="code-keyword">struct</span> InnerDeleter: <span class="code-keyword">public</span> D
+    {
+        <span class="code-keyword">mutable</span> _internal::_ptr_to_unique_cbx cbx;
+    }; 
+    InnerDeleter inner_deleter; <span class="code-comment">// is a D
+</span>
+    <span class="code-comment">//provide a function to access the _ptr_to_unique_cbx cbx
+</span>
+    <span class="code-keyword">inline</span> _ptr_to_unique_cbx&amp; get_cbx() <span class="code-keyword">const</span>
+    {
+        <span class="code-keyword">return</span> inner_deleter.cbx;
+    }</pre>
+
+<p>If we consider the case where <code>D</code> is empty as it is with <code>std::default_delete</code>;</p>
+
+<p style="margin-left: 40px"><code>struct</code> <code>InnerDeleter </code>has just one data member, <code>cbx</code>, so its size is the size of <code>cbx</code>. There is no need for a separate address for <code>D</code> because <code>InnerDeleter </code>is a <code>D</code>.</p>
+
+<p style="margin-left: 40px">We then give the <code>notify_ptrs</code> deleter just one data member, an <code>InnerDeleter</code>. This means <code>notify_ptrs </code>is the same size as <code>inner_deleter </code>which is the same size as <code>cbx</code>. We now have that Empty Base Class Optimisation for <code>D</code>.</p>
+
+<p>The pointer to the control block is accessed using <code>get_cbx()</code> and inner_deleter is a <code>D</code>. So now, we can replace pseudo code with real code.</p>
+
+<p>The deletion operator.</p>
+
+<div class="pre-lang" id="premain972553"><div>C++</div><div class="pre-action-link"><span id="copycode972553" class="copy-code" data-index="972553" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre972553" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-comment">//The functor call to do the deletion
+</span><span class="code-keyword">void</span> <span class="code-keyword">operator</span>()(T* p)
+{
+    <span class="code-comment">//zero ref_ptrs that reference this object
+</span>    get_cbx().mark_invalid();
+    <span class="code-comment">//leave deletion to passed in deleter
+</span>    inner_deleter(p);
+}
+</pre>
+
+<p>The conversion operator that allows and intercepts transfer from <code>notifying_unique_ptr</code> to <code>unique_ptr</code></p>
+
+<div class="pre-lang" id="premain164027"><div>C++</div><div class="pre-action-link"><span id="copycode164027" class="copy-code" data-index="164027" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre164027" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-comment">//Permits and intercepts move from notifying_unique_ptr to unique_ptr
+</span><span class="code-keyword">operator</span> D&amp; ()
+{   <span class="code-summarycomment">///</span><span class="code-comment">plain unique_ptr doesn't support ptr_to_unique
+</span>    <span class="code-comment">//so any that reference this object must be zeroed
+</span>    get_cbx().mark_invalid();
+    <span class="code-keyword">return</span> inner_deleter; <span class="code-comment">//return the passed in deleter
+</span>}
+</pre>
+
+<p>We also need a conversion constructor to allow transfer from a plain <code>unique_ptr</code> to a <code>notifying_unique_ptr</code>:</p>
+
+<div class="pre-lang" id="premain659359"><div>C++</div><div class="pre-action-link"><span id="copycode659359" class="copy-code" data-index="659359" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre659359" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true"><span class="code-comment">//permit move from unique_ptr to notifying_unique_ptr
+</span><span class="code-keyword">template</span><span class="code-keyword">&lt;</span> <span class="code-keyword">class</span> D2, 
+<span class="code-keyword">class</span> = <span class="code-sdkkeyword">std::enable_if_t</span><span class="code-keyword">&lt;</span><span class="code-sdkkeyword">std::is_convertible</span><span class="code-keyword">&lt;</span>D2, D<span class="code-keyword">&gt;</span>::value<span class="code-keyword">&gt;</span><span class="code-keyword">&gt;</span>
+<span class="code-keyword">inline</span> notify_ptrs(<span class="code-keyword">const</span> D2&amp; deleter) 
+{    
+}</pre>
+
+<h5>ptr_to_unique</h5>
+
+<p>Like most smart pointers, the majority of the code consists of carefully composed conversion constructors and assignments. This is where most of the hard work is and determines its grammar of use. To keep the public interface clear, much of the work is delegated to commonly called private methods. In particular:</p>
+
+<p style="margin-left: 40px"><code>point_to(ptr) </code>which is called by most constructors and assignments. If you look at its two versions, one taking <code>ptr_to_unique </code>and the other taking <code>notifying_unique_ptr</code>, you will see how the work is apportioned between the templated <code>ptr_to_unique </code>itself and the non-templated <code>_ptr_to_unique_cbx cbx</code>:</p>
+
+<p style="margin-left: 40px"><code>accept_move(ptr)</code> which is called when the operand is falling out of scope. Knowing that the operand is going to die, there is no need to bump the reference count on the Control Block (slightly quicker).</p>
+
+<p style="margin-left: 40px"><code>checked_pointer()</code> checks the control block before returning the raw pointer.</p>
+
+<p style="margin-left: 40px">Some private aliasing constructors are also defined. They are currently not called and are there to support extended functionality which will be published in the near future.</p>
+
+<p>In constructions and assignments, versions containing <code>const&amp;&amp;</code> arguments are defined to catch occasions when the source is falling out of scope.</p>
+
+<p style="margin-left: 40px">Initialisation from a <code>ptr_to_unique </code>falling out of scope means move semantics can be used which can be more optimal.</p>
+
+<p style="margin-left: 40px">Initialisation from a <code>notifying_unique_ptr</code> falling out of scope is prohibited so that you cannot write:</p>
+
+<div class="pre-lang" id="premain895721"><div>C++</div><div class="pre-action-link"><span id="copycode895721" class="copy-code" data-index="895721" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre895721" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true">ptr_to_unique<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> puT = std::<strong>move</strong>(a_notifying_unique_ptr); <span class="code-comment">//<strong>error</strong> - cannot take ownership</span></pre>
+
+<p style="margin-left: 40px">or:</p>
+
+<div class="pre-lang" id="premain104546"><div>C++</div><div class="pre-action-link"><span id="copycode104546" class="copy-code" data-index="104546" style="visibility: visible;"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 460 460" style="width: 16px;height:16px;" xml:space="preserve"><g><path d="M425.934,0H171.662c-18.122,0-32.864,14.743-32.864,32.864v77.134h30V32.864c0-1.579,1.285-2.864,2.864-2.864h254.272     c1.579,0,2.864,1.285,2.864,2.864v254.272c0,1.58-1.285,2.865-2.864,2.865h-74.729v30h74.729 c18.121,0,32.864-14.743,32.864-32.865V32.864C458.797,14.743,444.055,0,425.934,0z"></path><path d="M288.339,139.998H34.068c-18.122,0-32.865,14.743-32.865,32.865v254.272C1.204,445.257,15.946,460,34.068,460h254.272 c18.122,0,32.865-14.743,32.865-32.864V172.863C321.206,154.741,306.461,139.998,288.339,139.998z M288.341,430H34.068    c-1.58,0-2.865-1.285-2.865-2.864V172.863c0-1.58,1.285-2.865,2.865-2.865h254.272c1.58,0,2.865,1.285,2.865,2.865v254.273h0.001 C291.206,428.715,289.92,430,288.341,430z"></path></g></svg></span></div></div>
+<pre id="pre104546" style="margin-top:0;" class="lang-cplusplus notranslate" data-language="c++" data-allowshrink="True" data-collapse="False" data-codeblock-processed="true">ptr_to_unique<span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span> puT = std::<strong>make_unique</strong><span class="code-keyword">&lt;</span>T<span class="code-keyword">&gt;</span>(); <span class="code-comment">//<strong>error </strong>- cannot take ownership</span></pre>
+
+<h2><a id="Summary" name="Summary">Summary</a></h2>
+
+<p>The addition of <code>ptr_to_unique</code> 'upgrades' single ownership to match the pointer safety resources that have long been available for shared ownership. Single ownership is important and remains the correct and natural model for many designs. It deserves proper smart pointer coverage and <code>ptr_to_unique </code>completes this by acting as a safe refuge for its secondary references.</p>
+
+<p>The table of available smart pointers can now be presented as follows:</p>
+
+
+	<table class="ArticleTable"><thead>		<tr>			<td>ownership</td>			<td>&nbsp;</td>			<td><strong>owning</strong></td>			<td>&nbsp;</td>			<td>&nbsp;</td>			<td>&nbsp;</td>			<td><strong>non-owning</strong></td>		</tr>	</thead>	<tbody>		<tr>			<td><strong>single</strong></td>			<td>&nbsp;</td>			<td><code>unique_ptr&lt;T&gt; </code> 0 overhead</td>			<td>&nbsp;</td>			<td>&nbsp;</td>			<td>&nbsp;</td>			<td><em>don't *hold secondary refs.</em></td>		</tr>		<tr>			<td>&nbsp;</td>			<td>&nbsp;</td>			<td><code>notifying_unique_ptr&lt;T&gt;</code></td>			<td>&nbsp;</td>			<td>&lt;--</td>			<td>&nbsp;</td>			<td><code>ptr_to_unique&lt;T&gt;</code></td>		</tr>		<tr>			<td><strong>shared</strong></td>			<td>&nbsp;</td>			<td><code>shared_ptr&lt;T&gt;</code></td>			<td>&nbsp;</td>			<td>&lt;--</td>			<td>&nbsp;</td>			<td><code>weak_ptr&lt;T&gt;</code></td>		</tr>	</tbody></table>
+
+<p>* hold – means to store and retrieve to use later.</p>
+
+<p>You can continue to use the zero overhead <code>unique_ptr&lt;T&gt;</code> where you don't need to hold on to any secondary references but where you do, you can use <code>notifying_unique_ptr&lt;T&gt;</code> so you can hold those references safely with <code>ptr_to_unique&lt;T&gt;</code>. Shared ownership is already well supported by <code>shared_ptr&lt;T&gt;</code>/<code>weak_ptr&lt;T&gt;</code> and should be used when it is a correct expression of the design.</p>
+
+<h2><a id="Why doesn&#39;t unique_ptr already have" name="Why doesn&#39;t unique_ptr already have">Why doesn't unique_ptr already have</a> a smart weak companion like shared_ptr?</h2>
+
+<p>I found myself asking this question so I'm sure others will ask it to.</p>
+
+<p><code>unique_ptr </code>is zero overhead and that is important. It means that it can be used as a declarative owner everywhere including the most low level bare metal code without any fear of a downside. C++ has needed this ever since it provided the <code>new </code>and <code>delete </code>keywords. If <code>new</code> had returned a <code>unique_ptr </code>from the start we would have been saved a lot of trouble.</p>
+
+<p>Anyway being zero overhead is not compatible with having a smart weak companion. So in its native state, <code>unique_ptr </code>simply can't do it.</p>
+
+<p>With <code>shared_ptr</code>, zero overhead is a lost cause. It already supports reference counted control blocks so it was only a small extra price to hold the weak count required to support <code>weak_ptr</code>. That price had to be paid anyway because &nbsp;<code>weak_ptr </code>is a requirement for some of <code>shared_ptrs </code>most fundamental applications.</p>
+
+<p>Now back to <code>unique_ptr</code>. It doesn't have built in support for weak smart pointers but it does give you the means to plug it in as an optional extra and this is exploited by <code>ptr_to_unique</code>.</p>
+
+<p>So the real question is; Why did the Standard Library not provide that optional extra?</p>
+
+<p>I think it is a matter of the Standard Library needing to carefully scope what it covers. It took on ownership and the smart pointers it provides do comprehensively cover that. The general safety of secondary references or pointers simply lies outside of that scope. They do things very properly and leave them well finished with no loose ends so widening the scope is a very big deal.</p>
+
+<p>I did e-mail Bjarne Stroustrop some years ago about the perils of having no weak smart pointer to use with <code>unique_ptr</code>. He replied that he recognised the issue but it was unlikely that it would receive attention because it was all focused on updates to the language. There have been several updates to the language since then so my guess is that they left it there (ownership covered) and haven't got back to it (optional extras to help with pointer safety). Updates to the Standard Library often introduce components that could have been provided long ago if someone had got around to it.</p>
+
+<p>It is fortunate that the authors of <code>unique_ptr </code>have, in true C++ tradition, provided a doorway for support for weak smart pointers to be customised in. It has to be an optional extra because there must always be a zero overhead <code>unique_ptr</code>.</p>
+
+<h2><a id="History" name="History">History</a></h2>
+
+<ul>
+	<li>21<sup>st</sup> November, 2021: First publication but many ideas derive from previous publications on The Code Project by the same author.</li>	<li>15th December, 2021:<br>
+	Article title rephrased and Abstract rewritten.<br>
+	Updates to source code in ptr_to_unique.h<br>
+	&nbsp; &nbsp;<code>ptr_to_unique </code>now throws an immediate exception when calling the <code>* </code>operator on a null pointer<br>
+	&nbsp; &nbsp;<code>make_notifying_unique</code> and <code>custom_make_unique </code>functions added.<br>
+	&nbsp; &nbsp;Some background&nbsp;changes to facilitate extensions which will be published shortly.&nbsp;<br>
+	New sections added to the article:&nbsp;<br>
+	&nbsp; &nbsp; make_notifying_unique<br>
+	&nbsp;&nbsp; &nbsp;Runtime error handling&nbsp;<br>
+	&nbsp;&nbsp; &nbsp;Why doesn't unique_ptr already have a smart weak companion like shared_ptr?<br>
+	Section on using your own custom deleter rewritten and repositioned.</li></ul>
+
+<!-- Article Ends -->
+
+
+						</div>
+						
+
+						
+						<h2>License</h2>
+						<div id="LicenseTerms"><p>This article, along with any associated source code and files, is licensed under <a href="http://www.codeproject.com/info/cpol10.aspx" rel="license">The Code Project Open License (CPOL)</a></p></div>
+						
+
+						
+						<br>
+						
+						    <br>
+						
+						
+
+						<div class="clearfix"></div>
+
+						<div style="padding-top:8px">
+							
+						</div>
+
+					
+
+				    
+					</form>
+
+				</div>
+
+				
+				<div class="bottom-promo"> 
+				    
+				</div>
+				
+                
+                
+
+				
+				
+				
+
+			</div>
+			
+
+            
+            
+            
+
+        </div>
+        
+
+		
+		<div class="site-footer">
+			<div class="align-left">
+				<a id="ctl00_PermaLink" href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor">Permalink</a><br>
+				<br>
+				<a id="ctl00_PrivacyLink" href="https://www.codeproject.com/info/privacy.aspx">Privacy</a><br>
+    			<a id="ctl00_CookiePolicyLink" href="https://www.codeproject.com/info/cookie.aspx">Cookies</a><br>
+                <a id="ctl00_TermsOfUseLink" href="https://www.codeproject.com/info/TermsOfUse.aspx">Terms of Use</a><br>
+			</div>
+
+            <div class="align-center">
+				
+
+
+<div class="page-width">
+    Layout: <a id="ctl00_PageWidth_FixedT" title="Fixed width layout" rel="nofollow" class=" active" href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor?PageFlow=FixedWidth">fixed</a>
+    |
+    <a id="ctl00_PageWidth_FluidT" title="Fluid layout" rel="nofollow" href="https://www.codeproject.com/Articles/5316026/ptr-to-unique-T-extending-std-unique-ptr-to-suppor?PageFlow=Fluid">fluid</a>
+</div>
+
+
+				
+
+				
+
+	            
+
+                <br>
+			</div>
+                
+			<div class="align-right">
+				Article Copyright 2021 by john morrison leon<br>Everything else
+				Copyright © <a href="mailto:webmaster@codeproject.com">CodeProject</a>, 1999-2024<br>
+                <br>
+				Web01 
+				2.8:2024-10-20:1<br>
+			</div>
+		</div>
+		
+
+		<br clear="all">
+		
+			
+
+	</div> 
+	</div> 
+</div>
+
+
+
+
+
+
+
+<script type="text/javascript"> // DEFERRED script
+
+document.addEventListener('DOMContentLoaded', function() {
+
+	new CodeBlocks().initialise('#contentdiv');
+	
+	$('.author-wrapper .description').shorten({showChars: 400});
+	
+	anchorAnimate();
+	
+	$('#__EVENTVALIDATION').attr('autocomplete', 'off');
+
+})
+</script>
+
+
+
+
+
+
+
+
+
+
+<style type="text/css">.copied::after {  position: absolute;  right: 0;  display: inline-block; white-space: nowrap; content: 'copied'; color: #fff; background-color: #f90;  border-radius: 3px; padding:1px 8px; opacity: 0;  will-change: opacity, transform; animation: showcopied 1.5s ease; } @keyframes showcopied { 0% { opacity: 0; } 70% { opacity: 1; } 100% { opacity: 0; } } </style><canvas id="cv1" width="1px" height="1px" style="position:absolute;left:0;top:0;pointer-events:none"></canvas><canvas id="cv2" width="1px" height="1px" style="position:absolute;left:0;top:0;pointer-events:none"></canvas></body></html>
