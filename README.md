@@ -20,6 +20,31 @@ notifying_unique_ptr<T,D= default_delete<T>>
 = unique_ptr<T, notify_ptrs<T, D>>
 ________________________________________________________________________________
 
+Here is a trivial example of its use:
+
+	xnr::ptr_to_unique<T> pT; //declare a ptr_to_unique – it will initialise to nullptr
+
+	//Declare a  notifying_unique_ptr and make it the owner of a new object.
+	notifying_unique_ptr<T> apT = std::make_unique<T>();
+
+	pT =  apT; //point pT at apT
+
+	//Declare another  ptr_to_unique and point it at pT
+	xnr::ptr_to_unique<T> pT2 = pT;
+
+	if(pT) //tests as valid
+		pT->DoSomething(); //called
+	if(pT2) //tests as valid
+		pT2->DoSomething(); //called
+
+	apT = nullptr; //delete the object using it owner
+
+	if(pT) //tests as invalid
+		pT->DoSomething(); //not called
+	if(pT2) //tests as invalid
+		pT2->DoSomething(); //not called
+
+In practice it is likely that a ptr_to_unique may exist in a wider scope that the unique_ptr it references. This is where it is most needed and it will work just the same carrying the same guarantees. When the owning unique_ptr falls our of scope, it will delete the object and any ptr_to_uniques that reference it will read as nullptr.
 
 
     
