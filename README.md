@@ -1,4 +1,4 @@
-# ptr_to_unique - A smart pointer to an object already owned by a unique_ptr.
+# ptr_to_unique - a smart pointer to an object already owned by a unique_ptr.
 
 ptr_to_unique&lt;T&gt; is a non owning smart pointer to an object already owned by a unique_ptr&lt;T&gt; that is guaranteed to read as null if the object has been deleted, ensuring that it never dangles. This means that with ptr_to_unique&lt;T&gt;, the non-null test is always a reliable test of its validity.
 
