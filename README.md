@@ -1,16 +1,30 @@
 # ptr_to_unique - A smart pointer to an object already owned by a unique_ptr.
 
-ptr_to_unique<T> is a smart pointer to an object already owned by a unique_ptr<T> that is guaranteed to read as null if the object has been deleted ensuring that it never dangles. std::unique_ptr is extended to support this by declaring it with a special custom deleter that will notify any ptr_to_uniques that reference it of deletions.
+ptr_to_unique<T> is a non owning smart pointer to an object already owned by a unique_ptr<T> that is guaranteed to read as null if the object has been deleted, ensuring that it never dangles. This means that with ptr_to_unique<T>, the non-null test is always a reliable test of its validity.
 
-    std::unique_ptr<T, notify_ptrs<T>> //a unique_ptr enabled for use with ptr_to_unique
+It is intrusive on the owning unique_ptr declaration requiring required a specialised deletion hook to be inserted as a custom deleter and its use carries some overhead. However it should be considered a safety requirement wherever a secondary pointer may persist beyond the life of its pointee, particularly class members that persist from one event to another or from one function call to another.
 
-which can be written more conveniently as 
+Its use provides complete safety to a common idiom whose hazards are usually only partially mitigated and have resulted in many serious dangling pointer errors.
+Also its simplicity of use and its universal guarantee of being valid or null opens up new design possibilities allowing much greater proliferation, storage and use of secondary pointers in the form of ptr_to_unique.
+________________________________________________________________________________
 
-    notifying_unique_ptr<T> //exactly the same thing courtesy of 'using' declaration
+It is implemented by single header file ptr_to_unique.h which defines two classes: 
 
-ptr_to_unique can be initialised by a notifying_unique_ptr (the owner), another ptr_to_unique or nullptr.  
+ptr_to_unique<T> - the new non-owning smart pointer
 
-Like the unique_ptr it references, it is guaranteed to be valid or read as null.
+notify_ptrs<T, D = default_delete<T>> - a deletion hook required for any unique_ptr that will be referenced by ptr_to_unique.
+
+and a using declaration which conveniently encapsulates the declaration of a unique_ptr enabled for use with ptr_to_unique.
+
+notifying_unique_ptr<T,D= default_delete<T>> 
+= unique_ptr<T, notify_ptrs<T, D>>
+________________________________________________________________________________
+
+
+
+    
+
+
 	
 ________________________________________________________________________________
 
