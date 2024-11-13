@@ -45,11 +45,49 @@ Here is a trivial example of its use:
 		pT2->DoSomething(); //not called
 
 In practice it is likely that a ptr_to_unique may exist in a wider scope that the unique_ptr it references. This is where it is most needed and it will work just the same carrying the same guarantees. When the owning unique_ptr falls our of scope, it will delete the object and any ptr_to_uniques that reference it will read as nullptr.
+________________________________________________________________________________
+ptr_to_unique can be initialised on construction and assignment by:
 
+nullptr 
 
-    
+a notifying_unique_ptr
 
+or another ptr_to_unique
 
-	
+but it will not allow the following incorrect assignments to compile:
+
+	ptr_to_unique<T> puT= some_raw_pointer;          //error, source not owned by a unique_ptr
+	notifying_ unique_ptr<T> apT =  a_ptr_to_unique; //error, non-owner cannot initialise owner
+	ptr_to_unique<T> puT= make_notifying_unique<T>();          //error, ptr_to_unique cannot take ownership
+
+The clarification of owner and non-owner types generates an extra set of grammatical rules that the compiler enforces. This helps to keep code clear and coherent.
+
+ptr_to_unique supports the following pointer emulating operations in the same way as any other smart pointer.
+
+ptr->DoSomething();  //pointer dereference
+
+T& t = *ptr;  //dereference as an object
+
+if(ptr) //boolean non-null test
+{
+}
+
+if(ptr == another_ptr) and if(ptr != another_ptr)
+where another pointer may be a notifying_unique_ptr, a unique_ptr or a raw pointer
+
+Pointer arithmetical comparisons (> and <) are not supported nor are any other pointer arithmetical operations (++, –, + etc.) .
+
+The following dot methods are also supported.
+
+T* p=ptr.get(); //returns the pointee as a raw pointer
+
+ptr_to_unique<U> pU = ptr. dynamic_ptr_cast<U>();
+
+Of course when you get hold of that raw pointer you can do mischief with it but you have to be realistic. Most functions take raw pointers because they can't anticipate what kind of smart pointer you are going to call them with. It can be abused but you are going to need it. 
+
+Only a dynamic cast is permitted because it is run-time checked. Static cast would undermine the guarantee that there can be no incorrect initialisation of a ptr_to_unique even by mistake.
+
+ptr_to_unique can be declared as a const and set to point at a valid object on initialisation but it will still self zero if that object is deleted. Otherwise, it behaves as const – you can never point it anywhere else:
+
 ________________________________________________________________________________
 
