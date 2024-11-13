@@ -1,6 +1,6 @@
 # ptr_to_unique - A smart pointer to an object already owned by a unique_ptr.
 
-ptr_to_unique<T> is a non owning smart pointer to an object already owned by a unique_ptr<T> that is guaranteed to read as null if the object has been deleted, ensuring that it never dangles. This means that with ptr_to_unique<T>, the non-null test is always a reliable test of its validity.
+ptr_to_unique&lt;T&gt; is a non owning smart pointer to an object already owned by a unique_ptr&lt;T&gt; that is guaranteed to read as null if the object has been deleted, ensuring that it never dangles. This means that with ptr_to_unique&lt;T&gt;, the non-null test is always a reliable test of its validity.
 
 It is intrusive on the owning unique_ptr declaration requiring required a specialised deletion hook to be inserted as a custom deleter and its use carries some overhead. However it should be considered a safety requirement wherever a secondary pointer may persist beyond the life of its pointee, particularly class members that persist from one event to another or from one function call to another.
 
@@ -10,7 +10,7 @@ ________________________________________________________________________________
 
 It is implemented by single header file ptr_to_unique.h which defines two classes: 
 
-ptr_to_unique<T> - the new non-owning smart pointer
+ptr_to_unique&lt;T&gt; - the new non-owning smart pointer
 
 notify_ptrs<T, D = default_delete<T>> - a deletion hook required for any unique_ptr that will be referenced by ptr_to_unique.
 
@@ -81,7 +81,7 @@ The following dot methods are also supported.
 
 T* p=ptr.get(); //returns the pointee as a raw pointer
 
-ptr_to_unique<U> pU = ptr. dynamic_ptr_cast<U>();
+ptr_to_unique&lt;U&gt; pU = ptr. dynamic_ptr_cast&lt;U&gt;();
 
 Of course when you get hold of that raw pointer you can do mischief with it but you have to be realistic. Most functions take raw pointers because they can't anticipate what kind of smart pointer you are going to call them with. It can be abused but you are going to need it. 
 
