@@ -60,7 +60,7 @@ but it will not allow the following incorrect assignments to compile:
 
 	ptr_to_unique<T> puT= some_raw_pointer;          //error, source not owned by a unique_ptr
 	notifying_ unique_ptr<T> apT =  a_ptr_to_unique; //error, non-owner cannot initialise owner
-	ptr_to_unique<T> puT= make_notifying_unique<T>();          //error, ptr_to_unique cannot take ownership
+	ptr_to_unique<T> puT= make_notifying_unique<T>(); //error, ptr_to_unique cannot take ownership
 
 The clarification of owner and non-owner types generates an extra set of grammatical rules that the compiler enforces. This helps to keep code clear and coherent.
 
