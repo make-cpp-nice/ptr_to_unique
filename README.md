@@ -48,7 +48,7 @@ In practice it is likely that a ptr_to_unique may exist in a wider scope that th
 ________________________________________________________________________________
 ptr_to_unique can be initialised on construction and assignment by:
 
-nullptr 
+nullptr  - setting a ptr_to_unique to null does not delete the object it was referencing.
 
 a notifying_unique_ptr
 
