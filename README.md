@@ -6,6 +6,8 @@ It is intrusive on the owning unique_ptr declaration requiring a specialised del
 
 Its use provides complete safety to a common idiom whose hazards are usually only partially mitigated and have resulted in many serious dangling pointer errors.
 Also its simplicity of use and its universal guarantee of being valid or null opens up new design possibilities allowing much greater proliferation, storage and use of secondary pointers in the form of ptr_to_unique.
+
+It is complete and ready to download and use.
 ________________________________________________________________________________
 
 It is implemented by single header file ptr_to_unique.h which defines two classes: 
