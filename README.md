@@ -104,3 +104,32 @@ then all ptr_to_uniques that were referencing A will be zeroed because the new o
 If an object is passed from a unique_ptr C to a notifying_unique_ptr  A, there will be no ptr_to_uniques to worry about because the  unique_ptr C doesn't support them and can't accrue them.
 ________________________________________________________________________________
 
+make_notifying_unique<T, D>()
+
+std::make_unique<T>() is adequate to  initialise a notifying_unique_ptr because there is a seamless transfer of ownership from the unique_ptr returned by make_unique to the  notifying_unique_ptr being initialised. As exemplified as follows:
+
+	xnr::notifying_unique_ptr<T> apT= std::make_unique<T>();
+
+make_notifying_unique<T, D>() differs in that it explicitly returns a  notifying_unique_ptr
+
+This allows you to use it as follows to express the above line more concisely:
+
+	auto apT= std::make_notifying_unique<T>();
+
+It also differs in that it has a second parameter allowing it to be used with a custom deleter/allocator as outlined in the next section.
+________________________________________________________________________________
+
+If you have your own custom deleter that you want to use, that is not a problem. Simply pass it as the second template parameter to  notifying_unique_ptr,  as you would with a unique_ptr:
+
+	notifying_unique_ptr<T, my_deleter<T>> ptr;
+
+There is an issue,with a simple remedy if you want to retrieve your deleter using ptr.get_deleter() because, by default, it will return the notify_ptrs deleter. So the following code would not compile:
+
+	ptr.get_deleter().my_deleter_data = data; //error  notify_ptrs doesn't have a  my_deleter_data member
+
+However it will give you your deleter if you explicitly type for it  e.g.
+
+	my_deleter deleter = ptr.get_deleter(); //will use implicit conversion to return your deleter
+	deleter.my_deleter_data = data;  //ok compiles
+
+ ________________________________________________________________________________
