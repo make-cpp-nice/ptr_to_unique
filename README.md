@@ -104,21 +104,6 @@ then all ptr_to_uniques that were referencing A will be zeroed because the new o
 If an object is passed from a unique_ptr C to a notifying_unique_ptr  A, there will be no ptr_to_uniques to worry about because the  unique_ptr C doesn't support them and can't accrue them.
 ________________________________________________________________________________
 
-make_notifying_unique<T, D>()
-
-std::make_unique<T>() is adequate to  initialise a notifying_unique_ptr because there is a seamless transfer of ownership from the unique_ptr returned by make_unique to the  notifying_unique_ptr being initialised. As exemplified as follows:
-
-	xnr::notifying_unique_ptr<T> apT= std::make_unique<T>();
-
-make_notifying_unique<T, D>() differs in that it explicitly returns a  notifying_unique_ptr
-
-This allows you to use it as follows to express the above line more concisely:
-
-	auto apT= std::make_notifying_unique<T>();
-
-It also differs in that it has a second parameter allowing it to be used with a custom deleter/allocator as outlined in the next section.
-________________________________________________________________________________
-
 If you have your own custom deleter that you want to use, that is not a problem. Simply pass it as the second template parameter to  notifying_unique_ptr,  as you would with a unique_ptr:
 
 	notifying_unique_ptr<T, my_deleter<T>> ptr;
@@ -131,38 +116,4 @@ However it will give you your deleter if you explicitly type for it  e.g.
 
 	my_deleter deleter = ptr.get_deleter(); //will use implicit conversion to return your deleter
 	deleter.my_deleter_data = data;  //ok compiles
-
-If you are using a custom deleter it usually means you are allocating in some customised manner rather than by using make_unique<T>() which wouldn't know what  customised manner to use.
-
-make_notifying_unique<T, D>() mentioned above takes a second template parameter for a custom deleter/allocator. It is a custom deleter but as well as implementing
-
-void operator()(T* p)
-
-as required by unique_ptr. It must also implement an allocator method
-
-template <class... Types>
-static inline T* allocate(Types&&... _Args)
-
-The allocate method must be static because it will be called in a void before anything gets constructed. Here is an example of a compliant allocating deleter that simply replicates the defaults. 
-
-	template <class T>
-	struct a_deleter_allocator
-	{
-    	//required by std::unique_ptr
-    	void operator()(T* p)
-    	{
-        		//replace with your deletion code
-        		delete p;
-    	}
-    	//required by make_notifying_unique
-    	template <class... Types>
-    	static inline T* allocate(Types&&... _Args)
-    	{
-        		//replace with your allocation code
-        		return new T(std::forward<Types>(_Args)...);
-    	}
-	};
-
-The allocating deleter is a good way to encapsulate and centralise your matching allocation and deletion code and ensure that their application doesn't get wires crossed. 
-
  ________________________________________________________________________________
