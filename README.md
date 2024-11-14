@@ -88,6 +88,17 @@ Of course when you get hold of that raw pointer you can do mischief with it but 
 Only a dynamic cast is permitted because it is run-time checked. Static cast would undermine the guarantee that there can be no incorrect initialisation of a ptr_to_unique even by mistake.
 
 ptr_to_unique can be declared as a const and set to point at a valid object on initialisation but it will still self zero if that object is deleted. Otherwise, it behaves as const – you can never point it anywhere else:
+________________________________________________________________________________
+There are some considerations with transfer of ownership:
 
+Ownership can be transferred between unique_ptr and notifying_ unique_ptr as long the types are compatible and they have the same deleter. In the case of notifying_ unique_pt that will be the deleter D passed in notify_ptrs, not notify_ptrs itself which is transparent for this evaluation.
+
+If an object is passed from a notifying_unique_ptr  A to another notifying_unique_pt B
+then all ptr_to_uniques that were referencing A will remain valid pointing at the same object that is now held by B.
+
+However if an object is passed from a notifying_unique_ptr  A to a unique_pt C
+then all ptr_to_uniques that were referencing A will be zeroed because the new owner, a unique_ptr, will not be able to keep them safe by notifying deletions.
+
+If an object is passed from a unique_ptr C to a notifying_unique_ptr  A, there will be no ptr_to_uniques to worry about because the  unique_ptr C doesn't support them and can't accrue them.
 ________________________________________________________________________________
 
