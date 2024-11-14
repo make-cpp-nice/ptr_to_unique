@@ -132,4 +132,37 @@ However it will give you your deleter if you explicitly type for it  e.g.
 	my_deleter deleter = ptr.get_deleter(); //will use implicit conversion to return your deleter
 	deleter.my_deleter_data = data;  //ok compiles
 
+If you are using a custom deleter it usually means you are allocating in some customised manner rather than by using make_unique<T>() which wouldn't know what  customised manner to use.
+
+make_notifying_unique<T, D>() mentioned above takes a second template parameter for a custom deleter/allocator. It is a custom deleter but as well as implementing
+
+void operator()(T* p)
+
+as required by unique_ptr. It must also implement an allocator method
+
+template <class... Types>
+static inline T* allocate(Types&&... _Args)
+
+The allocate method must be static because it will be called in a void before anything gets constructed. Here is an example of a compliant allocating deleter that simply replicates the defaults. 
+
+	template <class T>
+	struct a_deleter_allocator
+	{
+    	//required by std::unique_ptr
+    	void operator()(T* p)
+    	{
+        		//replace with your deletion code
+        		delete p;
+    	}
+    	//required by make_notifying_unique
+    	template <class... Types>
+    	static inline T* allocate(Types&&... _Args)
+    	{
+        		//replace with your allocation code
+        		return new T(std::forward<Types>(_Args)...);
+    	}
+	};
+
+The allocating deleter is a good way to encapsulate and centralise your matching allocation and deletion code and ensure that their application doesn't get wires crossed. 
+
  ________________________________________________________________________________
