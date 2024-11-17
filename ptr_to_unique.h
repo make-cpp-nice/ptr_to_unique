@@ -7,33 +7,12 @@
 
 namespace xonor
 {
-
-template <class T>
-struct an_allocating_deleter
-{
-	//required by std::unique_ptr
-	void operator()(T* p)
-	{
-		delete p;
-	}
-	//required by make_notifying_unique
-	template <class... Types>
-	static inline T* allocate(Types&&... _Args)
-	{
-		return new T(std::forward<Types>(_Args)...);
-	}
-};
-
 //forward declaration of main public types
 template <class U, class D> struct notify_ptrs;
 template <class U> class ptr_to_unique;
 
 namespace _internal
 {
-	//friends that will enable extended funcionality
-	template<class T> class _inwards_offset;
-	template<class T> class _inwards_index_offset;
-
 	//________________ _ptr_to_unique_cbx____________________
 	/*
 	cbx = Control Block conneXion
@@ -42,7 +21,6 @@ namespace _internal
 	All accesses to the control block are via _ptr_to_unique_cbx so it also privately holds the
 	definition and implementation of the control block.
 	*/
-
 	struct _ptr_to_unique_cbx
 	{
 		//Only these classes have access to private constructor
@@ -76,7 +54,7 @@ namespace _internal
 		public:
 			//construction
 			inline constexpr control_block(size_t count = 1)
-				: m_reference_count(0), m_valid_count(count) {
+				: m_reference_count(0), m_valid_count(int(count)) {
 			}
 			// tests if m_valid_count is set non-zero
 			inline bool get_valid() const {
@@ -169,24 +147,7 @@ namespace _internal
 				0 : pCB->m_valid_count; 
 		}
 	};//end struct _ptr_to_unique_cbx
-
-	template<class T, class D>
-	struct make_chooser
-	{
-		template <class D, class... Types>
-		static auto make(Types&&... _Args) {
-			return (D:: template allocate(std::forward<Types>(_Args)...));
-		}
-	};
-	template<class T>
-	struct make_chooser<T, std::default_delete<T>>
-	{
-		template <class D = std::default_delete<T>, class... Types>
-		static auto make(Types&&... _Args) {
-			return (new T(std::forward<Types>(_Args)...));
-		}
-	};
-
+	
 }//end namespace _internal
 
 //________________ notify_ptrs<T, D>____________________
@@ -270,18 +231,6 @@ template<class T, class D = std::default_delete<T>>
 using notifying_unique_ptr =
 	typename std::template unique_ptr <T, notify_ptrs<T, D>>;
 
-template <class T, class D = std::default_delete<T>, class... Types,
-	std::enable_if_t<!std::is_array_v<T>, int> = 0>
-inline auto make_notifying_unique(Types&&... _Args) {
-	return notifying_unique_ptr<T, D>(
-		_internal::make_chooser<T, D>::template make<D>(std::forward<Types>(_Args)...));
-}
-template <class T, class D = std::default_delete<T>, class... Types,
-	std::enable_if_t<!std::is_array_v<T>, int> = 0>
-	inline auto custom_make_unique(Types&&... _Args) {
-	return std::unique_ptr<T, D>(
-		_internal::make_chooser<T, D>::template make<D>(std::forward<Types>(_Args)...));
-}
 //________________ ptr_to_unique<T>________________
 /*
 */
@@ -382,11 +331,21 @@ public:
 	
 	//dereference 
 	inline T* const operator->() const {
-		return checked_pointer();
+		if(T* p= checked_pointer())
+			return p;
+		else
+		{
+			return nullptr;
+		}
+			
 	}
 	inline T& operator*() const {
-		return (cbx.check_valid()) ? *m_pT 
-			: throw std::runtime_error("ptr_to_unique operator*() null object dereference");
+		if (cbx.check_valid())
+			return *m_pT;
+		else
+		{
+			throw std::runtime_error("ptr_to_unique operator*() null object dereference");
+		}
 	}
 	
 	//casting
@@ -401,9 +360,7 @@ public:
 private:
 
 	template <class U> friend class ptr_to_unique;
-	template<class _T> friend class _internal::_inwards_offset;
-	template<class _T> friend class _internal::_inwards_index_offset;
-
+	
 	//-----------------Data members------------------------
 	//The pointer, local copy - ignored when control block says invalid
 	mutable T* m_pT;
@@ -543,8 +500,6 @@ template<class L, class R, class D>
 inline bool operator != (notifying_unique_ptr<L, D> const& l_ptr, ptr_to_unique<R> const& r_ptr) {
 	return l_ptr.get() != r_ptr.get();
 }
-
-
 
 }//end namespace xonor
 
