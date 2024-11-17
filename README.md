@@ -101,7 +101,7 @@ then all ```ptr_to_uniques``` that were referencing A will remain valid pointing
 However if an object is passed from a ```notifying_unique_ptr```  A to a ```unique_ptr``` C
 then all ```ptr_to_unique```s that were referencing A will be zeroed because the new owner, a ```unique_ptr```, will not be able to keep them safe by notifying deletions.
 
-If an object is passed from a ```unique_ptr``` C to a ```notifying_unique_ptr```  A, there will be no ptr_to_uniques to worry about because the ```unique_ptr``` C doesn't support them and can't accrue them.
+If an object is passed from a ```unique_ptr``` C to a ```notifying_unique_ptr```  A, there will be no ```ptr_to_unique```s to worry about because the ```unique_ptr``` C doesn't support them and can't accrue them.
 _______________________________________________________________________________
 ## zero_prts_to(notifying_unique_ptr) free function
 There is a free function that can be applied to a ```notifying_unique_ptr``` to zero any ```unique_ptr```s that reference it.
