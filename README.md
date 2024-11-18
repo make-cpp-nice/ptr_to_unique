@@ -130,6 +130,21 @@ deleter.my_deleter_data = data;  //ok compiles
 ```
 ______________________________________________________________________________
 
+## Thread safety
+
+```ptr_to_unique``` cannot be made thread safe in the same way as ```std::weak_ptr``` because with single ownership there is no way to prevent another thread from deleting the object while you are working with it. You keep it thread safe by never allowing a ```ptr_to_unique``` to point at something whose ownership is controlled by another thread. To ensure this:
+
++ Don't pass a ```ptr_to_unique``` to another thread to hold and use.
+
++ Zero all  ```ptr_to_unique```s that reference an object (```zero_ptrs_to```) before passing its ownership to another thread.
+
+The compiler can't enforce this, so you have it. But it isn't hard, you will know when you are mucking around between threads.
+
+You can pass an ownership of an object to another thread to be worked on as long as you have no further contact with that object until the other thread notifies that its processing is done and hands it back. This is a common and safe idiom with single ownership.
+
+If you want access to an object owned by another thread then you must use ```shared_ptr/weak_ptr```. Even then that only solve the pointer validity issue, you will still have to take action to prevent read/write thread clashes on mutable data. As I said, you will know when you are mucking around between threads.
+______________________________________________________________________________
+
 ## Safety and Performance
 Inevitably, there is some trade off between safety and performance and ```ptr_to_unique``` prioritises safety. It will not dangle. It is designed to be above all a reliable infrastructure node that can safely be used in a fairly casual manner allowing you to design and build with it confidently.
 
@@ -190,14 +205,14 @@ The Control Block lives as long as anything is referencing it. The ptr_to_unique
 
 There is nothing revolutionary about the design. The only thing that is novel is deciding to do it in this context.
 
-### Division of Labour
+#### Division of Labour
 ptr_to_unique and the notify_ptrs deleter are typed (templated) by the object they point at. So any code that doesn't get optimised away could potentially be instantiated multiple times. However, the Control Block and the pointers that reference it are not templated on the object type and therefore code using them should be instantiated once only. To ensure that the compiler sees this, the labour is divided between that which is templated on the object type (blue lines on the diagram) and that which is not (red lines on the diagram).
 
 This is done by creating a wrapper for the pointer to the control block which encapsulates all operations involving the ControlBlock including testing if it exists and allocating it when required. This is called _ptr_to_unique_cbx (not templated) and its methods are the only access to the control block which is declared privately within it.
 
 Any part of ptr_to_unique operation that does not depend on the object type is delegated to _ptr_to_unique_cbx.
 
-### The notify_ptrs deleter
+#### The notify_ptrs deleter
 The notify_ptrs deleter is a key component and also the most innovative. Its design is not obvious and requires some explanation.
 
 The notify_ptrs deleter must implement operator()(T* p) , which unique_ptr will call to do the deletion, and use this to achieve its key functionality which is tentatively represented here as pseudo code.
@@ -292,7 +307,7 @@ inline notify_ptrs(const D2& deleter)
 {    
 }
 
-### ptr_to_unique
+#### ptr_to_unique
 Like most smart pointers, the majority of the code consists of carefully composed conversion constructors and assignments. This is where most of the hard work is and determines its grammar of use. To keep the public interface clear, much of the work is delegated to commonly called private methods. In particular:
 
 point_to(ptr) which is called by most constructors and assignments. If you look at its two versions, one taking ptr_to_unique and the other taking notifying_unique_ptr, you will see how the work is apportioned between the templated ptr_to_unique itself and the non-templated _ptr_to_unique_cbx cbx:
