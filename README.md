@@ -8,7 +8,10 @@ It is intrusive on the owning ```unique_ptr``` declaration requiring a specialis
 Its use provides complete safety to a common idiom whose hazards are usually only partially mitigated and have resulted in many serious dangling pointer errors.
 Also its simplicity of use and its universal guarantee of being valid or null opens up new design possibilities allowing much greater proliferation, storage and use of secondary pointers in the form of ```ptr_to_unique```.
 
-It is complete and ready to download and use. Just download the ptr_to_unique.h file.
+It is complete and ready to download and use. Just download the ptr_to_unique.h file and include it.
+
+Please post any feedback or comments on [Comment and discussion](https://github.com/make-cpp-nice/ptr_to_unique/discussions/1)
+
 ________________________________________________________________________________
 ## Classes
 It is implemented by single header **file ptr_to_unique.h** which defines two classes: 
