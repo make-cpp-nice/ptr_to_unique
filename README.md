@@ -8,21 +8,21 @@ It is intrusive on the owning ```unique_ptr``` declaration requiring a specialis
 Its use provides complete safety to a common idiom whose hazards are usually only partially mitigated and have resulted in many serious dangling pointer errors.
 Also its simplicity of use and its universal guarantee of being valid or null opens up new design possibilities allowing much greater proliferation, storage and use of secondary pointers in the form of ```ptr_to_unique```.
 
-It is complete and ready to download and use. Just download the ptr_to_unique.h file and include it.
+It is complete and ready to download and use. Just download the **ptr_to_unique.h** file and include it.
 
 Please post any feedback or comments on [Comment and discussion](https://github.com/make-cpp-nice/ptr_to_unique/discussions/1)
 
 ________________________________________________________________________________
 ## Classes
-It is implemented by single header **file ptr_to_unique.h** which defines two classes: 
+It is implemented by single header file **ptr_to_unique.h** which defines two classes: 
 
-**```ptr_to_unique<T>```** the  new non-owning smart pointer
++ **```ptr_to_unique<T>```** the  new non-owning smart pointer
 
-*```notify_ptrs<T, D = default_delete<T>>```* - a deletion hook required for any unique_ptr that will be referenced by ```ptr_to_unique```.
++ *```notify_ptrs<T, D = default_delete<T>>```* - a deletion hook required for any unique_ptr that will be referenced by ```ptr_to_unique```.
 
 and a using declaration which conveniently encapsulates the declaration of a ```unique_ptr``` enabled for use with ptr_to_unique.
 
-**```notifying_unique_ptr<T,D= default_delete<T>> = unique_ptr<T, notify_ptrs<T, D>>```**
++ **```notifying_unique_ptr<T,D= default_delete<T>> = unique_ptr<T, notify_ptrs<T, D>>```**
 ________________________________________________________________________________
 ## Example
 Here is a trivial example of its use:
@@ -344,3 +344,7 @@ or:
 ptr_to_unique<T> puT = std::make_unique<T>(); //error - cannot take ownership
 ```
 ______________________________________________________________________________
+## Summary
+The addition of ```ptr_to_unique``` 'upgrades' single ownership to match the pointer safety resources that have long been available for shared ownership. Single ownership is important and remains the correct and natural model for many designs. It deserves proper smart pointer coverage and ```ptr_to_unique``` completes this by acting as a safe refuge for its secondary references.
+
+Please post any feedback or comments on [Comment and discussion](https://github.com/make-cpp-nice/ptr_to_unique/discussions/1)
