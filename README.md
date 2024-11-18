@@ -138,7 +138,7 @@ ______________________________________________________________________________
 
 + Zero all  ```ptr_to_unique```s that reference an object (```zero_ptrs_to```) before passing its ownership to another thread.
 
-The compiler can't enforce this, so you have it. But it isn't hard, you will know when you are mucking around between threads.
+The compiler can't enforce this, so you have to. But it isn't hard, you will know when you are mucking around between threads.
 
 You can pass an ownership of an object to another thread to be worked on as long as you have no further contact with that object until the other thread notifies that its processing is done and hands it back. This is a common and safe idiom with single ownership.
 
@@ -200,58 +200,62 @@ What follows is not a complete description. I hope the code largely speaks for i
 
 ![image](https://github.com/user-attachments/assets/68d5a30f-35b2-492b-8688-15868f0b40bf)
 
-Each ptr_to_unique carries its own local pointer to the object but that pointer is only accessed once the valid count has been checked in the Control Block. If the valid count is zero, then the local pointer is ignored and the ptr_to_unique reads as null. When the object is deleted, the notify_ptrs deleter accesses the Control Block and sets the valid count to zero so that all ptr_to_uniques referencing it will now read as null.
-The Control Block lives as long as anything is referencing it. The ptr_to_unique reference count keeps track of this. When ptr_to_unique reference count is zero and the valid count is zero, the Control Block will delete itself.
+Each ```ptr_to_unique``` carries its own local pointer to the object but that pointer is only accessed once the valid count has been checked in the Control Block. If the valid count is zero, then the local pointer is ignored and the ```ptr_to_unique``` reads as null. When the object is deleted, the ```notify_ptrs``` deleter accesses the Control Block and sets the valid count to zero so that all ```ptr_to_unique```s referencing it will now read as null.
+The Control Block lives as long as anything is referencing it. The ptr_to_unique reference count keeps track of this. When ```ptr_to_unique``` reference count is zero and the valid count is zero, the Control Block will delete itself.
 
 There is nothing revolutionary about the design. The only thing that is novel is deciding to do it in this context.
 
 #### Division of Labour
-ptr_to_unique and the notify_ptrs deleter are typed (templated) by the object they point at. So any code that doesn't get optimised away could potentially be instantiated multiple times. However, the Control Block and the pointers that reference it are not templated on the object type and therefore code using them should be instantiated once only. To ensure that the compiler sees this, the labour is divided between that which is templated on the object type (blue lines on the diagram) and that which is not (red lines on the diagram).
+```ptr_to_unique``` and the ```notify_ptrs``` deleter are typed (templated) by the object they point at. So any code that doesn't get optimised away could potentially be instantiated multiple times. However, the Control Block and the pointers that reference it are not templated on the object type and therefore code using them should be instantiated once only. To ensure that the compiler sees this, the labour is divided between that which is templated on the object type (blue lines on the diagram) and that which is not (red lines on the diagram).
 
-This is done by creating a wrapper for the pointer to the control block which encapsulates all operations involving the ControlBlock including testing if it exists and allocating it when required. This is called _ptr_to_unique_cbx (not templated) and its methods are the only access to the control block which is declared privately within it.
+This is done by creating a wrapper for the pointer to the control block which encapsulates all operations involving the ControlBlock including testing if it exists and allocating it when required. This is called ```_ptr_to_unique_cbx``` (not templated) and its methods are the only access to the control block which is declared privately within it.
 
-Any part of ptr_to_unique operation that does not depend on the object type is delegated to _ptr_to_unique_cbx.
+Any part of ```ptr_to_unique``` operation that does not depend on the object type is delegated to ```_ptr_to_unique_cbx```.
 
 #### The notify_ptrs deleter
-The notify_ptrs deleter is a key component and also the most innovative. Its design is not obvious and requires some explanation.
+The ```notify_ptrs``` deleter is a key component and also the most innovative. Its design is not obvious and requires some explanation.
 
-The notify_ptrs deleter must implement operator()(T* p) , which unique_ptr will call to do the deletion, and use this to achieve its key functionality which is tentatively represented here as pseudo code.
+The ```notify_ptrs``` deleter must implement ```operator()(T* p)``` , which ```unique_ptr``` will call to do the deletion, and use this to achieve its key functionality which is tentatively represented here as pseudo code.
 
-C++
+```C++
 void operator()(T* p)
 {
     Mark Control Block invalid
     Let passed in deleter do the deleting
 }
-At this stage, I have left it as pseudo code because how notify_ptrs should carry the passed in deleter D and the pointer to the control block is inconveniently conditioned by the requirements of transfer of ownership.
+```
+At this stage, I have left it as pseudo code because how ```notify_ptrs``` should carry the passed in deleter ```D``` and the pointer to the control block is inconveniently conditioned by the requirements of transfer of ownership.
 
-notify_ptrs should not impede transfer of ownership between notifying_unique_ptr and plain unique_ptr. Also in the case of transfer from notifying_unique_ptr to plain unique_ptr, it must zero any ptr_to_uniques referencing the owned object. This must be done because otherwise those ptr_to_uniques would be left with no notifications of deletion and could be left dangling.
+```notify_ptrs``` should not impede transfer of ownership between ```notifying_unique_ptr``` and plain ```unique_ptr```. Also in the case of transfer from ```notifying_unique_ptr``` to plain ```unique_ptr```, it must zero ```any ptr_to_unique``` referencing the owned object. This must be done because otherwise those ```ptr_to_unique```s would be left with no notifications of deletion and could be left dangling.
 
-We can get a smooth transfer from notifying_unique_ptr to plain unique_ptr simply by deriving notify_ptrs from the passed in deleter D. This will also give us Empty Base Class Optimisation and D is typically empty as in std::default_delete
+We can get a smooth transfer from ```notifying_unique_ptr``` to plain ```unique_ptr``` simply by deriving ```notify_ptrs``` from the passed in deleter ```D```. This will also give us Empty Base Class Optimisation and ```D```is typically empty as in ```std::default_delete```
 
-C++
+```C++
 struct notify_ptrs : public D
 {
-But this makes the transfer too smooth. It is so language elemental to take the base class of what is offered that there is nowhere to put code to intercept it and zero those ptr_to_uniques.
+```
+But this makes the transfer too smooth. It is so language elemental to take the base class of what is offered that there is nowhere to put code to intercept it and zero those ```ptr_to_unique```s.
 
-So instead notify_ptrs is not derived from D and a conversion operator is provided as the only path to achieve the transfer. And it is in this that we can put code to zero those ptr_to_uniques.
+So instead ```notify_ptrs``` is not derived from ```D``` and a conversion operator is provided as the only path to achieve the transfer. And it is in this that we can put code to zero those ```ptr_to_unique```s.
 
-C++
+```C++
 operator D& ()
 {
     Mark Control Block invalid
     return passed in deleter D
 }
-The problem now is that if we hold the passed in deleter D as member then, even if empty, it will occupy storage just to have a distinct address from the pointer to the control block.
+```
+The problem now is that if we hold the passed in deleter ```D``` as a member then, even if empty, it will occupy storage just to have a distinct address from the pointer to the control block.
 
-C++
+```C++
 struct notify_ptrs
 {
     D deleter;
     _ptr_to_unique_cbx cbx;
-We have lost the Empty Base Class Optimisation that would have come from deriving from D rather than containing it. We want that Empty Base Class Optimisation back and we can have it with the following contrivance which defines how the passed in deleter D and the pointer to the control block are held.
+```
+We have lost the Empty Base Class Optimisation that would have come from deriving from ```D``` rather than containing it. We want that Empty Base Class Optimisation back and we can have it with the following contrivance which defines how the passed in deleter ```D``` and the pointer to the control block are held.
 
-C++
+```C++
 struct notify_ptrs // if we derive from D, operator D& () will never be called
 {
 private:
@@ -268,17 +272,18 @@ private:
     {
         return inner_deleter.cbx;
     }
-If we consider the case where D is empty as it is with std::default_delete;
+```
+If we consider the case where ```D``` is empty as it is with ```std::default_delete```;
 
-struct InnerDeleter has just one data member, cbx, so its size is the size of cbx. There is no need for a separate address for D because InnerDeleter is a D.
+struct ```InnerDeleter``` has just one data member, ```cbx```, so its size is the size of ```cbx```. There is no need for a separate address for ```D``` because ```InnerDeleter``` is a ```D```.
 
-We then give the notify_ptrs deleter just one data member, an InnerDeleter. This means notify_ptrs is the same size as inner_deleter which is the same size as cbx. We now have that Empty Base Class Optimisation for D.
+We then give the ```notify_ptrs``` deleter just one data member, an ```InnerDeleter```. This means ```notify_ptrs``` is the same size as ```inner_deleter``` which is the same size as ```cbx```. We now have that Empty Base Class Optimisation for ```D```.
 
-The pointer to the control block is accessed using get_cbx() and inner_deleter is a D. So now, we can replace pseudo code with real code.
+The pointer to the control block is accessed using ```get_cbx()``` and inner_deleter is a ```D```. So now, we can replace pseudo code with real code.
 
 The deletion operator.
 
-C++
+```C++
 //The functor call to do the deletion
 void operator()(T* p)
 {
@@ -287,9 +292,10 @@ void operator()(T* p)
     //leave deletion to passed in deleter
     inner_deleter(p);
 }
+```
 The conversion operator that allows and intercepts transfer from notifying_unique_ptr to unique_ptr
 
-C++
+```C++
 //Permits and intercepts move from notifying_unique_ptr to unique_ptr
 operator D& ()
 {   ///plain unique_ptr doesn't support ptr_to_unique
@@ -297,36 +303,40 @@ operator D& ()
     get_cbx().mark_invalid();
     return inner_deleter; //return the passed in deleter
 }
+```
 We also need a conversion constructor to allow transfer from a plain unique_ptr to a notifying_unique_ptr:
 
-C++
+```C++
 //permit move from unique_ptr to notifying_unique_ptr
 template< class D2, 
 class = std::enable_if_t<std::is_convertible<D2, D>::value>>
 inline notify_ptrs(const D2& deleter) 
 {    
 }
-
+```
 #### ptr_to_unique
 Like most smart pointers, the majority of the code consists of carefully composed conversion constructors and assignments. This is where most of the hard work is and determines its grammar of use. To keep the public interface clear, much of the work is delegated to commonly called private methods. In particular:
 
-point_to(ptr) which is called by most constructors and assignments. If you look at its two versions, one taking ptr_to_unique and the other taking notifying_unique_ptr, you will see how the work is apportioned between the templated ptr_to_unique itself and the non-templated _ptr_to_unique_cbx cbx:
++ ```point_to(ptr)``` which is called by most constructors and assignments. If you look at its two versions, one taking ```ptr_to_unique``` and the other taking ```notifying_unique_ptr```, you will see how the work is apportioned between the templated ```ptr_to_unique``` itself and the non-templated ```_ptr_to_unique_cbx cbx```:
 
-accept_move(ptr) which is called when the operand is falling out of scope. Knowing that the operand is going to die, there is no need to bump the reference count on the Control Block (slightly quicker).
++ ```accept_move(ptr) ```which is called when the operand is falling out of scope. Knowing that the operand is going to die, there is no need to bump the reference count on the Control Block (slightly quicker).
 
-checked_pointer() checks the control block before returning the raw pointer.
++ ```checked_pointer() ```checks the control block before returning the raw pointer.
 
 Some private aliasing constructors are also defined. They are currently not called and are there to support extended functionality which will be published in the near future.
 
-In constructions and assignments, versions containing const&& arguments are defined to catch occasions when the source is falling out of scope.
+In constructions and assignments, versions containing ```const&&``` arguments are defined to catch occasions when the source is falling out of scope.
 
-Initialisation from a ptr_to_unique falling out of scope means move semantics can be used which can be more optimal.
+Initialisation from a ```ptr_to_unique``` falling out of scope means move semantics can be used which can be more optimal.
 
-Initialisation from a notifying_unique_ptr falling out of scope is prohibited so that you cannot write:
+Initialisation from a ```notifying_unique_ptr``` falling out of scope is prohibited so that you cannot write:
 
-C++
+```C++
 ptr_to_unique<T> puT = std::move(a_notifying_unique_ptr); //error - cannot take ownership
+```
 or:
 
-C++
+```C++
 ptr_to_unique<T> puT = std::make_unique<T>(); //error - cannot take ownership
+```
+______________________________________________________________________________
