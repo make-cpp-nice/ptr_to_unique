@@ -1,5 +1,5 @@
 # ptr_to_unique - a smart pointer to an object already owned by a unique_ptr.
-###### Search tags: C++, ptr_to_unique, smart_pointer, memory management, pointer safety, safe C++, unique_ptr, weak_ptr, observer_ptr
+
 ## Introduction
 ```ptr_to_unique<T>;``` is a non owning smart pointer to an object already owned by a ```unique_ptr<T>``` that is guaranteed to read as null if the object has been deleted, ensuring that it never dangles. This means that with ```ptr_to_unique<T>```, the non-null test is always a reliable test of its validity.
 
