@@ -11,8 +11,25 @@ namespace xonor
 template <class U, class D> struct notify_ptrs;
 template <class U> class ptr_to_unique;
 
-namespace _internal
+//________________ notifying_unique_ptr<T, D>____________________
+
+template<class T, class D = std::default_delete<T>>
+using notifying_unique_ptr =
+	typename std::template unique_ptr <T, notify_ptrs<T, D>>;
+
+
+class _xnrptrs_internal
 {
+	_xnrptrs_internal() = delete;
+
+	template <class U, class D> friend struct notify_ptrs;
+	template <class U> friend class ptr_to_unique;
+	template<class U, class... Types >
+	friend auto point_to(ptr_to_unique<U> const& ptr, Types...  args);
+	template<class U, class D, class... Types >
+	friend auto point_to(notifying_unique_ptr<U, D> const& ptr, Types...  args);
+private:	
+	
 	//________________ _ptr_to_unique_cbx____________________
 	/*
 	cbx = Control Block conneXion
@@ -29,7 +46,7 @@ namespace _internal
 	private:
 		class control_block
 		{
-			friend struct _ptr_to_unique_cbx;
+			friend struct _xnrptrs_internal::_ptr_to_unique_cbx;
 		private:
 			unsigned int m_reference_count; //no. of ptr_to_uniques referencing it
 			int m_valid_count; //valid if non-zero. Also used to store dynamic array size
@@ -147,8 +164,96 @@ namespace _internal
 				0 : pCB->m_valid_count; 
 		}
 	};//end struct _ptr_to_unique_cbx
+
+	class inwards_offsets
+	{
+		inwards_offsets() = delete;
+
+		template <class T>
+		friend class ptr_to_unique;
+		template<class U, class... Types >
+		friend auto point_to(ptr_to_unique<U> const& ptr, Types...  args);
+		template<class U, class D, class... Types >
+		friend auto point_to(notifying_unique_ptr<U, D> const& ptr, Types...  args);
+	private:
+		
+
+		template<class T, class Type1>
+		static auto& read_offsets(T& t, Type1 arg1) {
+			return do_offset(t, arg1);
+		}
+		template<class T, class Type1, class... Types>
+		static auto& read_offsets(T& t, Type1 arg1, Types...  args) {
+			return read_offsets(do_offset(t,
+				arg1), args...);
+		}
+
+		//with integer index
+		template<class T, size_t N>
+		static inline T& do_offset(T(&a)[N], size_t index) {
+			return (index < N) ? a[index] : throw std::out_of_range("xnr::point_into bad index");
+		}
+		template<class T, size_t N>
+		static inline T& do_offset(std::array<T, N>& a, size_t index) {
+			return (index < N) ? a[index] : throw std::out_of_range("xnr::point_into bad index");
+		}
+
+		//with std::integral_constant index
+		template<class T, size_t N, class IntType, IntType Index>
+		static inline T& do_offset(T(&a)[N], std::integral_constant<IntType, Index> index) {
+			using check_in_range = std::enable_if_t < Index<N >;
+			return a[Index];
+		}
+		template<class T, size_t N, class IntType, IntType Index>
+		static inline T& do_offset(std::array<T, N>& a, std::integral_constant<IntType, Index> index) {
+			using check_in_range = std::enable_if_t < Index<N >;
+			return a[Index];
+		}
+		
+		//class member offset
+		template<class T, class T2, class Targ,
+			class = std::enable_if_t<std::is_base_of<T2, T>::value>>
+			static inline Targ& do_offset(T& t, Targ T2::* member) {
+			return t.*member;
+		}
+
+		template<int I, int S = I>
+		struct tuple_reader
+		{
+			template<class T, class... Types >
+			static auto& read(T& t, std::tuple<Types...> const& path) {
+				return tuple_reader<I - 1, S>::read(
+					do_offset(t, std::get<S - I>(path)),
+					path);
+			}
+		};
+		template<int S>
+		struct tuple_reader<1, S>
+		{
+			template<class T, class... Types >
+			static auto& read(T& t, std::tuple<Types...> const& path) {
+				return do_offset(t, std::get<S - 1>(path));
+			}
+		};
+
+		template<class T, class... Types >
+		static auto& do_offset(T& t, std::tuple<Types...> const& path) {
+			return tuple_reader<sizeof...(Types)>::read(t, path);
+		}
+
+		template<class U, class T, class... Types >
+		static inline auto _point_into(ptr_to_unique<U> const& ptr, T* pT, Types...  args)
+		{
+			return ptr_to_unique<T>(ptr, args...);
+		}
+		template<class U, class D, class T, class... Types >
+		static inline auto _point_into(notifying_unique_ptr<U, D> const& ptr, T* pT, Types...  args)
+		{
+			return ptr_to_unique<T>(ptr, args...);
+		}
+	};
 	
-}//end namespace _internal
+};//end namespace _xnrptrs_internal
 
 //________________ notify_ptrs<T, D>____________________
 /*
@@ -164,7 +269,7 @@ private:
 	//D will typically be dataless so we still need empty base class optimisation
 	struct InnerDeleter: public D
 	{
-		mutable _internal::_ptr_to_unique_cbx cbx;
+		mutable _xnrptrs_internal::_ptr_to_unique_cbx cbx;
 	}; 
 	InnerDeleter inner_deleter; // is a D
 
@@ -172,7 +277,7 @@ private:
 	using if_base_of = std::enable_if_t<std::is_base_of<T, U>::value>;
 
 
-	inline _internal::_ptr_to_unique_cbx& get_cbx() const	{
+	inline _xnrptrs_internal::_ptr_to_unique_cbx& get_cbx() const	{
 		return inner_deleter.cbx;
 	}
 
@@ -222,27 +327,19 @@ public:
 	}
 };
 
-//________________ notifying_unique_ptr<T, D>____________________
-/*
-	Shorthand for std::unique_ptr <T, notify_ptrs<T, D>>
-*/
-
-template<class T, class D = std::default_delete<T>>
-using notifying_unique_ptr =
-	typename std::template unique_ptr <T, notify_ptrs<T, D>>;
 
 //________________ ptr_to_unique<T>________________
 /*
 */
+
 template <class T>
 class ptr_to_unique
-{
+{	
 	template<class U>
 	using if_base_of = std::enable_if_t<std::is_base_of<T, U>::value>;
-	template<class U>
-	using if_derived_from = std::enable_if_t<std::is_base_of<U, T>::value>;
-public:
 	
+public:
+	using element_type = T;
 	//default constructor - initialises as nullptr
 	inline ptr_to_unique() {}
 	
@@ -318,6 +415,23 @@ public:
 	ptr_to_unique(notifying_unique_ptr<U, Del>const&& ptr) = delete;
 	template <class U, class Del>
 	ptr_to_unique& operator=(notifying_unique_ptr<U, Del>const&& ptr) = delete;
+
+	//Alias construction to point at anything within the owned object
+	template<class U, class... Types >
+	inline ptr_to_unique(ptr_to_unique<U> const& ptr, Types...  args)
+		: ptr_to_unique(ptr, &_xnrptrs_internal::inwards_offsets::read_offsets(
+			*(ptr.get()), args...))
+	{}
+
+	template <class U, class Del, class... Types >
+	inline ptr_to_unique(notifying_unique_ptr<U, Del>const& ptr, Types...  args)
+		: ptr_to_unique(ptr, &_xnrptrs_internal::inwards_offsets::read_offsets(
+			*(ptr.get()), args...))
+	{}
+
+	//also PROHIBIT from a notifying_unique_ptr going out of scope
+	template <class U, class Del, class... Types >
+	inline ptr_to_unique(notifying_unique_ptr<U, Del>const&& ptr, Types...  args) = delete;
 	
 	//boolean test
 	inline explicit operator bool() const {
@@ -360,12 +474,14 @@ public:
 private:
 
 	template <class U> friend class ptr_to_unique;
+	template<class U, class... Types >
+	friend auto point_to(ptr_to_unique<U> const& ptr, Types...  args);
 	
 	//-----------------Data members------------------------
 	//The pointer, local copy - ignored when control block says invalid
 	mutable T* m_pT;
 	//control block connection - hold reliable validity flag
-	mutable _internal::_ptr_to_unique_cbx cbx;
+	mutable _xnrptrs_internal::_ptr_to_unique_cbx cbx;
 	//------------------------------------------------------
 	
 	//service functions for construction and assignment
@@ -388,13 +504,13 @@ private:
 		return (cbx.check_valid()) ? m_pT : nullptr;
 	}
 
-	//Private aliasing constructors not called - available for extended functionality
+	//Private aliasing constructors called by public aliasing constructord
 
 	//from notifying_unique_ptr
 	template <class U, class Del>
 	inline ptr_to_unique(notifying_unique_ptr<U, Del>const& ptr, T* pTar) {
 		if ((m_pT = (ptr.get()) ? pTar : nullptr))
-			cbx.assure_and_adopt_owner_block(ptr.get_deleter().cbx);
+			cbx.assure_and_adopt_owner_block(ptr.get_deleter().get_cbx());
 	}
 	template <class U, class Del> //don't cosume a unique_ptr
 	inline ptr_to_unique(notifying_unique_ptr<U, Del>const&& ptr, T* pTar) = delete;
@@ -405,11 +521,44 @@ private:
 		cbx.adopt_block(ptr.cbx);
 		m_pT = pTar;
 	}
-	inline ptr_to_unique(_internal::_ptr_to_unique_cbx const& _cbx, T* pTar) {	//Called when source is falling out of scope 
+	inline ptr_to_unique(
+		_xnrptrs_internal::_ptr_to_unique_cbx const& _cbx, T* pTar) {	//Called when source is falling out of scope 
 		cbx.steal_block(_cbx); //slightly faster
 		m_pT = pTar;
 	}
+
+	
 };
+
+template <class T>
+inline auto point_to(ptr_to_unique<T> const& ptr)
+{
+	return ptr_to_unique<T>(ptr);
+}
+template <class T, class D>
+inline auto point_to(notifying_unique_ptr<T, D> const& ptr)
+{
+	return ptr_to_unique<T>(ptr);
+}
+
+
+
+template<class U, class... Types >
+inline auto point_to(ptr_to_unique<U> const& ptr, Types...  args)
+{	
+	return _xnrptrs_internal::inwards_offsets::_point_into(
+		ptr, &_xnrptrs_internal::inwards_offsets::read_offsets(
+			*(ptr.get()), args...), args...);
+}
+template<class U, class D, class... Types >
+inline auto point_to(notifying_unique_ptr<U, D> const& ptr, Types...  args)
+{
+	return _xnrptrs_internal::inwards_offsets::_point_into(
+		ptr, &_xnrptrs_internal::inwards_offsets::read_offsets(
+			*(ptr.get()), args...), args...);
+}
+
+
 
 //------ external operations defined for notifying_unique_ptr<T, D> -----
 
@@ -504,5 +653,6 @@ inline bool operator != (notifying_unique_ptr<L, D> const& l_ptr, ptr_to_unique<
 }//end namespace xonor
 
 namespace xnr = xonor;
+
 
 #endif //PTR_TO_UNIQUE_H
