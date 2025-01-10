@@ -107,6 +107,82 @@ then all ```ptr_to_unique```s that were referencing A will be zeroed because the
 
 If an object is passed from a ```unique_ptr``` C to a ```notifying_unique_ptr```  A, there will be no ```ptr_to_unique```s to worry about because the ```unique_ptr``` C doesn't support them and can't accrue them.
 _______________________________________________________________________________
+# Pointing inside an owned object
+This is about allowing ```ptr_to_unique``` to be initialised from a ```notifying_unique_ptr``` or another ```ptr_to_unique``` but instead of pointing at the owned object, to point at some item inside of it. This is equally safe and can be more convenient than holding a reference to the larger object and having to dereference down to the desired item each time it is used. It can be critical for keeping modules decoupled.
+
+This can be done using a variadic 'aliasing' constructor (terminology borrowed from shared_ptr)
+
+ptr_to_unique<TargetType>(ptr, inwards_offsets...)
+
+or more conveniently using the point_into free function which will automatically deduce the target type.
+```C++
+auto point_to(ptr, inwards_offsets...)
+```
+where 
+
+ptr is the ```notifying_unique_ptr``` or ```ptr_to_unique``` from which it is being initialised
+
+inwards_offsets... is a variadic sequence of inwards offsets that specify the target item to be referenced. Each offset may be:
+a class member offset – ```&class_name::member_name``` – (aka pointer to member data)  to enable access to class data members. 
+or an integer offset – ```index``` - to enable access to elements of fixed arrays
+
+	This enables any and only items that reside within the larger owned object to be reached.
+
+```point_to``` returns a ```ptr_to_unique``` to the target item. Its type will be that of the target item.
+	
+As this paradigm of inwards offsets is not part of the mainstream vernacular, an example may help to make it clearer. 
+
+Here is the class structure for an imaginary machine and its components;
+```C++
+struct Grommet
+{
+	//Grommet stuff
+};
+struct Widget
+{
+	Grommet topGrommet;
+	Grommet bottomGrommet;
+};
+struct Machine
+{
+	Widget upWidget;
+	Widget downWidget;
+	Widget stepWidgets[6];
+};
+```
+and we also have two utilities, one monitors the behaviour and performance of a ```Widget``` and the other a ```Grommet```. 
+
+The ```Widget``` monitor only knows about Widgets and holds a pointer to the ```Widget``` it is currently monitoring 
+```C++
+xnr::ptr_to_unique<Widget> p_curr_widget;
+```
+the  ```Grommet``` monitor only knows about Grommets. and holds a pointer to the ```Grommet``` it is currently monitoring 
+```C++
+xnr::ptr_to_unique<Grommet> p_curr_grommet;
+```
+and we have a Machine owned by a ```notifying_unique_ptr```
+```C++
+::notifying_unique_ptr<Machine> apMachine = std::make_unique<Machine>();
+```
+The following are examples of how  ```p_curr_widget``` and  ```p_curr_grommet``` can be initialised  to point at Grommets and Widgets within the ```Machine``` owned by ```apMachine```: 
+```C++
+curr_widget = xnr::point_to(apMachine, &Machine::upWidget);
+curr_widget = xnr::point_to(apMachine, &Machine::stepWidgets, 3);
+
+curr_grommet = xnr::point_to(apMachine, &Machine::upWidget, &Widget::topGrommet);
+curr_grommet = xnr::point_to(apMachine, &Machine::stepWidgets, 3, &Widget::bottomGrommet);
+```
+Index offsets are bounds checked at run-time but if you express them as ```std::integral_constant``` then they will be bounds checked during compilation:
+```C++
+curr_widget = xnr::point_to(apMachine, &Machine::stepWidgets, std::integral_constant<int, 3>());
+```
+That is a bit of a handful to write and read but if you download and include literal_integral_constants.h from ….... then the same thing can be written:
+```C++
+curr_widget = xnr::point_to(apMachine, &Machine::stepWidgets, 3_);//compile time bounds check
+```
+The ability to point safely inside an owned object greatly increases the range of uses to which ptr_to_unique can be applied. It means you can point it at anything as long as you also have access to the notifying_unique_ptr that owns it. This is potentially powerful and the somewhat painstaking approach involved here is to ensure that it can only be applied correctly. 
+
+_______________________________________________________________________________
 ## zero_prts_to(notifying_unique_ptr) free function
 There is a free function that can be applied to a ```notifying_unique_ptr``` to zero any ```unique_ptr```s that reference it.
 
