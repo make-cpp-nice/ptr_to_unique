@@ -60,6 +60,7 @@ ________________________________________________________________________________
 + a ```notifying_unique_ptr```
 
 + or another ```ptr_to_unique```
++ it can also be set to point at any item declared within an object owned by a ```notifying_unique_ptr``` – see the section  Pointing inside an owned object for how this is done.
 
 but it will not allow the following incorrect assignments to compile:
 ```C++
@@ -107,13 +108,13 @@ then all ```ptr_to_unique```s that were referencing A will be zeroed because the
 
 If an object is passed from a ```unique_ptr``` C to a ```notifying_unique_ptr```  A, there will be no ```ptr_to_unique```s to worry about because the ```unique_ptr``` C doesn't support them and can't accrue them.
 _______________________________________________________________________________
-# Pointing inside an owned object
+## Pointing inside an owned object
 This is about allowing ```ptr_to_unique``` to be initialised from a ```notifying_unique_ptr``` or another ```ptr_to_unique``` but instead of pointing at the owned object, to point at some item inside of it. This is equally safe and can be more convenient than holding a reference to the larger object and having to dereference down to the desired item each time it is used. It can be critical for keeping modules decoupled.
 
 This can be done using a variadic 'aliasing' constructor (terminology borrowed from shared_ptr)
-
+```C++
 ptr_to_unique<TargetType>(ptr, inwards_offsets...)
-
+```
 or more conveniently using the point_into free function which will automatically deduce the target type.
 ```C++
 auto point_to(ptr, inwards_offsets...)
@@ -126,7 +127,7 @@ inwards_offsets... is a variadic sequence of inwards offsets that specify the ta
 a class member offset – ```&class_name::member_name``` – (aka pointer to member data)  to enable access to class data members. 
 or an integer offset – ```index``` - to enable access to elements of fixed arrays
 
-	This enables any and only items that reside within the larger owned object to be reached.
+This enables any and only items that reside within the larger owned object to be reached.
 
 ```point_to``` returns a ```ptr_to_unique``` to the target item. Its type will be that of the target item.
 	
