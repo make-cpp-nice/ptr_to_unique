@@ -177,7 +177,7 @@ Index offsets are bounds checked at run-time but if you express them as ```std::
 ```C++
 curr_widget = xnr::point_to(apMachine, &Machine::stepWidgets, std::integral_constant<int, 3>());
 ```
-That is a bit of a handful to write and read but if you download and include literal_integral_constants.h from ….... then the same thing can be written:
+That is a bit of a handful to write and read but if you download and include literal_integral_constants.h from [make-cpp-nice/literal-integral-constants](https://github.com/make-cpp-nice/literal-integral-constants) then the same thing can be written:
 ```C++
 curr_widget = xnr::point_to(apMachine, &Machine::stepWidgets, 3_);//compile time bounds check
 ```
@@ -403,8 +403,6 @@ Like most smart pointers, the majority of the code consists of carefully compose
 + ```accept_move(ptr) ```which is called when the operand is falling out of scope. Knowing that the operand is going to die, there is no need to bump the reference count on the Control Block (slightly quicker).
 
 + ```checked_pointer() ```checks the control block before returning the raw pointer.
-
-Some private aliasing constructors are also defined. They are currently not called and are there to support extended functionality which will be published in the near future.
 
 In constructions and assignments, versions containing ```const&&``` arguments are defined to catch occasions when the source is falling out of scope.
 
