@@ -96,17 +96,9 @@ Only a dynamic cast is permitted because it is run-time checked. Static cast wou
 ```ptr_to_unique``` can be declared as a ```const``` and set to point at a valid object on initialisation but it will still self zero if that object is deleted. Otherwise, it behaves as ```const``` – you can never point it anywhere else:
 ________________________________________________________________________________
 ## Transfer of ownership
-There are some considerations with transfer of ownership:
+Ownership can be transferred between ```unique_ptr``` and ```notifying_ unique_ptr``` as long the types are compatible and they have the same deleter. In the case of ```notifying_ unique_ptr``` that will be the deleter ```D``` passed in to ```notify_ptrs```, not ```notify_ptrs``` itself which is transparent for this evaluation. 
 
-Ownership can be transferred between ```unique_pt```r and ```notifying_ unique_ptr``` as long the types are compatible and they have the same deleter. In the case of ```notifying_ unique_ptr``` that will be the deleter ```D``` passed in ```notify_ptrs```, not ```notify_ptrs``` itself which is transparent for this evaluation.
-
-If an object is passed from a ```notifying_unique_ptr```  A to another ```notifying_unique_ptr``` B
-then all ```ptr_to_uniques``` that were referencing A will remain valid pointing at the same object that is now held by B.
-
-However if an object is passed from a ```notifying_unique_ptr```  A to a ```unique_ptr``` C
-then all ```ptr_to_unique```s that were referencing A will be zeroed because the new owner, a ```unique_ptr```, will not be able to keep them safe by notifying deletions.
-
-If an object is passed from a ```unique_ptr``` C to a ```notifying_unique_ptr```  A, there will be no ```ptr_to_unique```s to worry about because the ```unique_ptr``` C doesn't support them and can't accrue them.
+On all transfers of ownership, all ```ptr_to_unique```s referencing the moved object wil be zeroed. This ensures that when an object is moved or swapped into another thread, no ```ptr_to_unique```s remain referencing it that would breach single thread visibility.
 _______________________________________________________________________________
 ## Pointing inside an owned object
 This is about allowing ```ptr_to_unique``` to be initialised from a ```notifying_unique_ptr``` or another ```ptr_to_unique``` but instead of pointing at the owned object, to point at some item inside of it. This is equally safe and can be more convenient than holding a reference to the larger object and having to dereference down to the desired item each time it is used. It can be critical for keeping modules decoupled.
@@ -213,17 +205,13 @@ ______________________________________________________________________________
 
 ## Thread safety
 
-```ptr_to_unique``` cannot be made thread safe in the same way as ```std::weak_ptr``` because with single ownership there is no way to prevent another thread from deleting the object while you are working with it. You keep it thread safe by never allowing a ```ptr_to_unique``` to point at something whose ownership is controlled by another thread. To ensure this:
+```ptr_to_unique``` works with ```unique_ptr``` and that requires single thread visibility. Any reference to a uniquely held object in another thread would be unsafe to use and ```ptr_to_unique``` doesn't and can't change that – you need shared ownership to do that safely. Any attempt to use ```ptr_to_unique``` to breach the single thread visibility of a ```unique_ptr``` will be met by an exception. You cannot use it to expose a ```unique_ptr``` to another thread.
 
-+ Don't pass a ```ptr_to_unique``` to another thread to hold and use.
+Within that domain of single thread visibility, thread safety is not an issue and that is where ```ptr_to_unique``` is designed to be used. It is a large domain in which most code still resides and where its use cases can be found e.g. the GUI thread of an application where a retained pointer can easily outlive its pointee. We don't normally breach that single thread visibility of ```unique_ptr``` because no good can come of it so it is not hard to stay within that domain. It is only novel exploratory attempts to leverage ```ptr_to_unique``` as a means to breach it that will be met with an exception.
 
-+ Zero all  ```ptr_to_unique```s that reference an object (```zero_ptrs_to```) before passing its ownership to another thread.
+A ```unique_ptr``` can safely pass ownership to another thread and single thread visibility is maintained because the other thread has it now and you don't any more. This is how singly owned objects are safely passed to other threads for work to be done on them. The transfer of ownership will zero ```any ptr_to_unique```s referencing the moved object so they don't remain as a breach of single visibility.
 
-The compiler can't enforce this, so you have to. But it isn't hard, you will know when you are mucking around between threads.
-
-You can pass an ownership of an object to another thread to be worked on as long as you have no further contact with that object until the other thread notifies that its processing is done and hands it back. This is a common and safe idiom with single ownership.
-
-If you want access to an object owned by another thread then you must use ```shared_ptr/weak_ptr```. Even then that only solve the pointer validity issue, you will still have to take action to prevent read/write thread clashes on mutable data. As I said, you will know when you are mucking around between threads.
+It is threadsafe within its domain of use and it will not allow its use outside of that domain.
 ______________________________________________________________________________
 
 ## Safety and Performance
