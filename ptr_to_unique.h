@@ -25,9 +25,9 @@ class _xnrptrs_internal
 	template <class U, class D> friend struct notify_ptrs;
 	template <class U> friend class ptr_to_unique;
 	template<class U, class... Types >
-	friend auto point_to(ptr_to_unique<U> const& ptr, Types...  args);
+	friend auto point_into(ptr_to_unique<U> const& ptr, Types...  args);
 	template<class U, class D, class... Types >
-	friend auto point_to(notifying_unique_ptr<U, D> const& ptr, Types...  args);
+	friend auto point_into(notifying_unique_ptr<U, D> const& ptr, Types...  args);
 private:	
 	
 	//________________ _ptr_to_unique_cbx____________________
@@ -179,9 +179,9 @@ private:
 		template <class T>
 		friend class ptr_to_unique;
 		template<class U, class... Types >
-		friend auto point_to(ptr_to_unique<U> const& ptr, Types...  args);
+		friend auto point_into(ptr_to_unique<U> const& ptr, Types...  args);
 		template<class U, class D, class... Types >
-		friend auto point_to(notifying_unique_ptr<U, D> const& ptr, Types...  args);
+		friend auto point_into(notifying_unique_ptr<U, D> const& ptr, Types...  args);
 	private:
 		
 
@@ -485,7 +485,7 @@ private:
 
 	template <class U> friend class ptr_to_unique;
 	template<class U, class... Types >
-	friend auto point_to(ptr_to_unique<U> const& ptr, Types...  args);
+	friend auto point_into(ptr_to_unique<U> const& ptr, Types...  args);
 	
 	//-----------------Data members------------------------
 	//The pointer, local copy - ignored when control block says invalid
@@ -539,47 +539,34 @@ private:
 
 	
 };
-
+/*
 template <class T>
-inline auto point_to(ptr_to_unique<T> const& ptr)
+inline auto point_into(ptr_to_unique<T> const& ptr)
 {
 	return ptr_to_unique<T>(ptr);
 }
 template <class T, class D>
-inline auto point_to(notifying_unique_ptr<T, D> const& ptr)
+inline auto point_into(notifying_unique_ptr<T, D> const& ptr)
 {
 	return ptr_to_unique<T>(ptr);
 }
-
+*/
 
 
 template<class U, class... Types >
-inline auto point_to(ptr_to_unique<U> const& ptr, Types...  args)
+inline auto point_into(ptr_to_unique<U> const& ptr, Types...  args)
 {	
 	return _xnrptrs_internal::inwards_offsets::_point_into(
 		ptr, &_xnrptrs_internal::inwards_offsets::read_offsets(
 			*(ptr.get()), args...), args...);
 }
 template<class U, class D, class... Types >
-inline auto point_to(notifying_unique_ptr<U, D> const& ptr, Types...  args)
+inline auto point_into(notifying_unique_ptr<U, D> const& ptr, Types...  args)
 {
 	return _xnrptrs_internal::inwards_offsets::_point_into(
 		ptr, &_xnrptrs_internal::inwards_offsets::read_offsets(
 			*(ptr.get()), args...), args...);
 }
-
-
-
-//------ external operations defined for notifying_unique_ptr<T, D> -----
-
-// zero_ptrs_to - reset all ptr_to_uniques that reference this object
-template<class T, class D>
-inline auto& zero_ptrs_to(notifying_unique_ptr<T, D>& ptr) {
-	ptr.get_deleter().reset_all_ptrs();
-	return ptr;
-}
-template<class T, class D> //dont't consume a unique_ptr
-inline auto& zero_ptrs_to(notifying_unique_ptr<T, D>&& ptr) = delete;
 
 
 //________________Comparison - only == and != ____________________-
