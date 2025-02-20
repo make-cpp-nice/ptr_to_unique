@@ -109,7 +109,7 @@ ptr_to_unique<TargetType>(ptr, inwards_offsets...)
 ```
 or more conveniently using the point_into free function which will automatically deduce the target type.
 ```C++
-auto point_to(ptr, inwards_offsets...)
+auto point_into(ptr, inwards_offsets...)
 ```
 where 
 
@@ -159,15 +159,15 @@ and we have a Machine owned by a ```notifying_unique_ptr```
 ```
 The following are examples of how  ```p_curr_widget``` and  ```p_curr_grommet``` can be initialised  to point at Grommets and Widgets within the ```Machine``` owned by ```apMachine```: 
 ```C++
-curr_widget = xnr::point_to(apMachine, &Machine::upWidget);
-curr_widget = xnr::point_to(apMachine, &Machine::stepWidgets, 3);
+curr_widget = xnr::point_into(apMachine, &Machine::upWidget);
+curr_widget = xnr::point_into(apMachine, &Machine::stepWidgets, 3);
 
-curr_grommet = xnr::point_to(apMachine, &Machine::upWidget, &Widget::topGrommet);
-curr_grommet = xnr::point_to(apMachine, &Machine::stepWidgets, 3, &Widget::bottomGrommet);
+curr_grommet = xnr::point_into(apMachine, &Machine::upWidget, &Widget::topGrommet);
+curr_grommet = xnr::point_into(apMachine, &Machine::stepWidgets, 3, &Widget::bottomGrommet);
 ```
 Index offsets are bounds checked at run-time but if you express them as ```std::integral_constant``` then they will be bounds checked during compilation:
 ```C++
-curr_widget = xnr::point_to(apMachine, &Machine::stepWidgets, std::integral_constant<int, 3>());
+curr_widget = xnr::point_into(apMachine, &Machine::stepWidgets, std::integral_constant<int, 3>());
 ```
 That is a bit of a handful to write and read but if you download and include literal_integral_constants.h from [make-cpp-nice/literal-integral-constants](https://github.com/make-cpp-nice/literal-integral-constants) then the same thing can be written:
 ```C++
@@ -176,17 +176,6 @@ curr_widget = xnr::point_to(apMachine, &Machine::stepWidgets, 3_);//compile time
 The ability to point safely inside an owned object greatly increases the range of uses to which ptr_to_unique can be applied. It means you can point it at anything as long as you also have access to the notifying_unique_ptr that owns it. This is potentially powerful and the somewhat painstaking approach involved here is to ensure that it can only be applied correctly. 
 
 _______________________________________________________________________________
-## zero_prts_to(notifying_unique_ptr) free function
-There is a free function that can be applied to a ```notifying_unique_ptr``` to zero any ```unique_ptr```s that reference it.
-
-```auto& zero_ptrs_to(notifying_unique_ptr<T, D>& ptr) ```
-
-It returns the same ```notifying_unique_ptr``` it was passed so it can be conveniently applied during transfer of ownership where it is most likely needed. e.g. 
-```C++
-ap2 = std::move(xnr::zero_ptrs_to(ap1));
-```
-It might be used as a way of making sure that you take your hands off an object (have no further means of referencing it) before passing its owership to another thread.
-________________________________________________________________________________
 ## Custom deleters
 If you have your own custom deleter that you want to use, that is not a problem. Simply pass it as the second template parameter to  ```notifying_unique_ptr```,  as you would with a ```unique_ptr```:
 ```C++
