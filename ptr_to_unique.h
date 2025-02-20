@@ -50,6 +50,7 @@ private:
 		private:
 			unsigned int m_reference_count; //no. of ptr_to_uniques referencing it
 			int m_valid_count; //valid if non-zero. Also used to store dynamic array size
+			std::thread::id thread_id;
 
 			enum {
 				invalid = -1
@@ -57,6 +58,8 @@ private:
 			
 			inline bool _is_valid() const
 			{
+				if (thread_id != std::this_thread::get_id())
+					throw std::exception();
 				return (m_valid_count> invalid);
 			}
 			inline void _invalidate()
@@ -70,8 +73,10 @@ private:
 
 		public:
 			//construction
-			inline constexpr control_block(size_t count = 1)
+			inline control_block(size_t count = 1)
 				: m_reference_count(0), m_valid_count(int(count)) {
+				
+				thread_id = std::this_thread::get_id();
 			}
 			// tests if m_valid_count is set non-zero
 			inline bool get_valid() const {
@@ -97,9 +102,11 @@ private:
 		};//end class control_block
 
 		mutable control_block* pCB;
+		
 
 		_ptr_to_unique_cbx() : pCB(nullptr) {
 		}
+
 		inline bool check_valid() const {
 			return (pCB) ?
 				(pCB->_is_valid()) ? true : quick_release()
@@ -198,6 +205,7 @@ private:
 			return (index < N) ? a[index] : throw std::out_of_range("xnr::point_into bad index");
 		}
 
+
 		//with std::integral_constant index
 		template<class T, size_t N, class IntType, IntType Index>
 		static inline T& do_offset(T(&a)[N], std::integral_constant<IntType, Index> index) {
@@ -288,11 +296,13 @@ public:
 
 	//Explicitly handle move from notifying_unique_ptr to notifying_unique_ptr
 	inline notify_ptrs(notify_ptrs const& deleter) {
-		get_cbx().pCB = deleter.get_cbx().pCB;
+		get_cbx().mark_invalid();
+		//get_cbx().pCB = deleter.get_cbx().pCB;
 	}
 	template< class U, class = if_base_of<U>>
 	inline notify_ptrs(notify_ptrs<U> const& deleter) {
-		get_cbx().pCB = deleter.get_cbx().pCB;
+		get_cbx().mark_invalid();
+		//get_cbx().pCB = deleter.get_cbx().pCB;
 	}
 	
 	//permit move from unique_ptr to notifying_unique_ptr
